@@ -2,9 +2,9 @@
   "name": "rhythm-agent-project",
   "version": "1.0.0",
   "description": "Initial web rhythm game based on Agent Architecture Docs",
-  "main": "server.js",
+  "main": "server/index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server/index.js"
   },
   "dependencies": {
     "express": "^4.19.0"

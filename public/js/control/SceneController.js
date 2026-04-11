@@ -124,6 +124,7 @@ export class SceneController {
         const host = shell.querySelector('#playfield-host');
 
         this._gameView.mount(host);
+        await this._gameView.loadAssets();
 
         const { laneView, effectView } = this._gameView.getSubViews();
         this._laneView = laneView;

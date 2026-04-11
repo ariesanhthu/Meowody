@@ -21,7 +21,7 @@ npm start
 
 Server sẽ:
 
-- Serve frontend static tại `http://localhost:<port>`
+- Serve toàn bộ static từ `public/` tại `http://localhost:<port>`
 - Expose API:
   - `GET /api/songs`
   - `GET /api/songs/:songId`
@@ -32,24 +32,43 @@ Server sẽ:
 
 ```text
 project/
-├─ server.js                         # Express server + port fallback
 ├─ server/
+│  ├─ index.js                       # Express server + port fallback
 │  ├─ SongCatalogService.js          # Quét thư mục bài hát, build catalog
 │  ├─ SscParser.js                   # Parse raw .ssc
-│  ├─ SscTimingResolver.js           # Beat -> ms resolver
+│  ├─ SscTimingResolver.js           # Beat → ms resolver
 │  └─ SscChartExtractor.js           # Chuẩn hóa chart + note events
-├─ public/
+├─ public/                            # Static root (served by Express)
 │  ├─ index.html
 │  ├─ css/style.css
-│  └─ js/
-│     ├─ main.js
-│     ├─ control/                    # SceneController, PlayController, InputController
-│     ├─ data/                       # Repository + Adapter + Validator
-│     ├─ model/                      # GameEngine, GameClock, Judgement, Score, Chart...
-│     ├─ shared/                     # EventBus
-│     └─ view/                       # GameView, LaneView, NoteView, HUDView, EffectView...
-└─ data/songs/                       # Asset + simfile (.ssc)
+│  ├─ js/
+│  │  ├─ main.js                     # Entry point
+│  │  ├─ control/                    # SceneController, PlayController, InputController
+│  │  ├─ data/                       # Repository + Adapter + Validator
+│  │  ├─ model/                      # GameEngine, GameClock, Judgement, Score, Chart…
+│  │  ├─ shared/                     # EventBus
+│  │  └─ view/                       # GameView, NoteView, LaneView, AssetLoader…
+│  ├─ data/songs/                    # Simfiles (.ssc) + audio + images
+│  └─ assets/                        # Optional UI sprites (xem bên dưới)
+│     ├─ backgrounds/                # playfield.png
+│     ├─ notes/                      # note-0.png … note-3.png
+│     ├─ receptors/                  # receptor-0.png … receptor-3.png
+│     └─ ui/                         # btn-play.png, btn-pause.png…
+└─ .agent/docs/                      # Architecture & build-phase docs
 ```
+
+## Custom Assets (tuỳ chọn)
+
+Tất cả assets đều optional. Nếu file PNG tồn tại, game dùng ảnh. Nếu không, CSS gradient/SVG fallback được dùng tự động.
+
+| Folder | File | Mô tả |
+|---|---|---|
+| `assets/notes/` | `note-0.png` … `note-3.png` | Sprite per-lane note (khuyến nghị 48×48, transparent PNG) |
+| `assets/receptors/` | `receptor-0.png` … `receptor-3.png` | Sprite per-lane receptor (khuyến nghị 80×80) |
+| `assets/backgrounds/` | `playfield.png` | Background playfield (any resolution, auto cover) |
+| `assets/ui/` | `btn-play.png`, `btn-pause.png`… | Button sprites |
+
+Xem `public/assets/ASSETS.md` để biết chi tiết.
 
 ## Kiến trúc runtime (ngắn gọn)
 
@@ -61,6 +80,7 @@ project/
    - handle input và judgement
    - xuất `RenderSnapshot`
 5. `View` render snapshot + hiệu ứng visual (Anime.js chỉ dùng cho animation UI, không quyết định timing gameplay).
+6. `AssetLoader` probe ảnh từ `assets/`, inject CSS overrides nếu có — không ảnh hưởng gameplay logic.
 
 ## Timing model
 
@@ -71,7 +91,7 @@ project/
 
 ## Dữ liệu bài hát
 
-Đặt bài hát vào `data/songs/<song-folder>/` với tối thiểu:
+Đặt bài hát vào `public/data/songs/<song-folder>/` với tối thiểu:
 
 - file nhạc (`.ogg`/`.mp3`/...)
 - file `.ssc`

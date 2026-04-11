@@ -1,13 +1,15 @@
 const http = require('http');
 const express = require('express');
 const path = require('path');
-const { discoverSongs } = require('./server/SongCatalogService');
+const { discoverSongs } = require('./SongCatalogService');
 
 const app = express();
 const PREFERRED_PORT = Number(process.env.PORT) || 3000;
 const MAX_PORT_OFFSET = 40;
 
-const SONGS_ROOT = path.join(__dirname, 'data', 'songs');
+const ROOT = path.join(__dirname, '..');
+const PUBLIC = path.join(ROOT, 'public');
+const SONGS_ROOT = path.join(PUBLIC, 'data', 'songs');
 const { songs, chartIndex, importWarnings } = discoverSongs(SONGS_ROOT);
 
 if (importWarnings.length) {
@@ -18,9 +20,7 @@ console.log(`[catalog] ${songs.length} song(s), ${chartIndex.size} chart(s) disc
 
 const songMap = new Map(songs.map((s) => [s.id, s]));
 
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/data', express.static(path.join(__dirname, 'data')));
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use(express.static(PUBLIC));
 
 app.get('/api/songs', (_req, res) => {
     const items = songs.map((s) => ({

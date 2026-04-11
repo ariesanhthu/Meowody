@@ -3,6 +3,7 @@ import { NoteView } from './NoteView.js';
 import { HUDView } from './HUDView.js';
 import { EffectView } from './EffectView.js';
 import { getFallbackSvg, attachFallback } from './ImageFallback.js';
+import { preloadAll } from './AssetLoader.js';
 
 /** @typedef {import('../model/DataModels.js').RenderSnapshot} RenderSnapshot */
 
@@ -63,6 +64,57 @@ export class GameView {
         this._hudView.mount(wrap.querySelector('.hud-slot'));
         this._noteView.setLayer(wrap.querySelector('.notes-layer'));
         this._effectView.mount(wrap);
+    }
+
+    /**
+     * Probe asset images and inject CSS overrides for entities that have custom sprites.
+     * Must be called after mount(). All assets are optional.
+     *
+     * Args:
+     *   None
+     *
+     * Returns:
+     *   Promise<void>
+     *
+     * Raises:
+     *   None
+     */
+    async loadAssets() {
+        const assets = await preloadAll(this._laneCount);
+        const rules = [];
+
+        for (let i = 0; i < this._laneCount; i++) {
+            if (assets[`note-${i}`]) {
+                rules.push(`.note[data-lane="${i}"] {
+                    background: url('${assets[`note-${i}`]}') center/contain no-repeat !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                }`);
+            }
+            if (assets[`receptor-${i}`]) {
+                rules.push(`.lane[data-lane="${i}"] .lane-receptor {
+                    background: url('${assets[`receptor-${i}`]}') center/contain no-repeat !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    opacity: 0.6 !important;
+                }`);
+            }
+        }
+
+        if (assets.background && this._playfield) {
+            this._playfield.style.backgroundImage = `url('${assets.background}')`;
+            this._playfield.style.backgroundSize = 'cover';
+            this._playfield.style.backgroundPosition = 'center';
+        }
+
+        if (rules.length > 0) {
+            const style = document.createElement('style');
+            style.id = 'asset-overrides';
+            style.textContent = rules.join('\n');
+            document.head.appendChild(style);
+        }
+
+        this._assets = assets;
     }
 
     /**
