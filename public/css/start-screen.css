@@ -1,0 +1,263 @@
+:root {
+    --start-bg: #d8d8d8;
+    --start-bg-deep: #a8a8a8;
+    --start-ink: #101114;
+    --start-outline: #f4f4f4;
+}
+
+.app-shell-start .app-header,
+.app-shell-start .app-footer {
+    display: none;
+}
+
+.overlay.start-overlay {
+    inset: 0;
+    display: block;
+    background: var(--start-bg);
+    backdrop-filter: none;
+    overflow: hidden;
+    padding: 0;
+}
+
+.start-screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--start-bg);
+}
+
+.start-bg-white {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.start-bg-white {
+    z-index: 1;
+}
+
+
+.start-particles {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.start-particle {
+    position: absolute;
+    --swing: 8deg;
+    width: var(--size, 90px);
+    height: auto;
+    left: var(--x, 0%);
+    top: var(--y, 0%);
+    transform: translate(-50%, -50%) translateY(var(--float-y, 0px)) rotate(calc(var(--rot, 0deg) + var(--float-rot, 0deg))) scale(var(--float-scale, 1));
+    transform-origin: var(--origin, 50% 50%);
+    filter: drop-shadow(0 5px 4px rgba(16, 17, 20, 0.2));
+}
+
+.start-particle-double-note {
+    --origin: 64% 72%;
+}
+
+.start-particle-note {
+    --origin: 50% 65%;
+}
+
+.start-particle-electric {
+    --origin: 10% 90%;
+}
+
+.start-particle-triangle {
+    --origin: 50% 75%;
+}
+
+.start-cat-wrap {
+    position: absolute;
+    left: clamp(30px, 13vw, 300px);
+    bottom: clamp(20px, 6vh, 300px);
+    width: clamp(300px, 33vw, 560px);
+    aspect-ratio: 595 / 617;
+    z-index: 8;
+}
+
+.start-cat-part {
+    position: absolute;
+    user-select: none;
+    pointer-events: none;
+}
+
+.start-cat-shadow {
+    width: 94%;
+    left: -30%;
+    bottom: -6%;
+    opacity: 0.75;
+    z-index: 1;
+}
+
+.start-cat-tail {
+    width: 35%;
+    left: -8vw;
+    top: 18%;
+    z-index: 2;
+    transform-origin: 90% 90%;
+}
+
+.start-cat-body {
+    width: 100%;
+    left: 0;
+    bottom: 0;
+    z-index: 3;
+}
+
+.start-cat-left {
+    width: 29%;
+    left: 0;
+    top: 33%;
+    z-index: 5;
+}
+
+.start-cat-right {
+    width: 43%;
+    left: 50%;
+    top: 45%;
+    z-index: 5;
+    transform-origin: 10% 90%;
+}
+
+.start-cat-guitar {
+    width: 100%;
+    left: -1vw;
+    top: 38%;
+    z-index: 4;
+    transform-origin: 10% 70%;
+}
+
+.start-logo {
+    position: absolute;
+    width: clamp(400px, 52vw, 800px);
+    right: clamp(50px, 10vw, 200px);
+    top: clamp(100px, 13vh, 500px);
+    z-index: 7;
+    pointer-events: none;
+}
+
+.start-actions {
+    position: absolute;
+    right: clamp(28px, 24vw, 400px);
+    top: clamp(190px, 50%, 620px);
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(18px, 2.8vh, 38px);
+    z-index: 10;
+}
+
+.start-action-btn {
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.start-action-btn img {
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+}
+
+.start-btn-play {
+    position: relative;
+    width: clamp(126px, 13vw, 204px);
+    filter: drop-shadow(0 8px 10px rgba(16, 17, 20, 0.35));
+}
+
+.start-btn-ring {
+    position: absolute;
+    inset: -8%;
+    border-radius: 50%;
+    border: 2px solid rgba(16, 17, 20, 0.2);
+    opacity: 0;
+}
+
+.start-btn-setting {
+    position:absolute;
+    width: clamp(86px, 10vw, 138px);
+    top: clamp(150px, 47%, 500px);
+    left: clamp(18px, 47vw, 200px);
+    filter: drop-shadow(0 6px 8px rgba(16, 17, 20, 0.3));
+}
+
+.start-action-btn:focus-visible {
+    outline: 3px solid rgba(16, 17, 20, 0.5);
+    outline-offset: 7px;
+    border-radius: 999px;
+}
+
+.start-meta {
+    position: absolute;
+    right: clamp(10px, 2vw, 220px);
+    bottom: clamp(18px, 4vh, 56px);
+    z-index: 10;
+    color: rgba(16, 17, 20, 0.72);
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* @media (max-width: 900px) {
+    .start-logo {
+        width: clamp(250px, 70vw, 620px);
+        right: 50%;
+        transform: translateX(50%);
+        top: 20px;
+    }
+
+    .start-cat-wrap {
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(500px, 90vw);
+        bottom: 88px;
+    }
+
+    .start-actions {
+        right: 18px;
+        top: auto;
+        bottom: 34px;
+        transform: none;
+        flex-direction: row;
+        gap: 14px;
+    }
+
+    .start-btn-play {
+        width: clamp(108px, 25vw, 144px);
+    }
+
+    .start-btn-setting {
+        width: clamp(74px, 18vw, 104px);
+    }
+
+    .start-meta {
+        left: 20px;
+        right: auto;
+        bottom: 26px;
+        text-align: left;
+        font-size: 0.76rem;
+    }
+
+    .start-particle {
+        width: calc(var(--size, 68px) * 0.74);
+    }
+} */

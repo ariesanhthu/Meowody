@@ -27,7 +27,7 @@ export class SceneController {
         this._input = new InputController(this._bus);
 
         /** @type {string} */
-        this._currentScene = 'menu';
+        this._currentScene = 'start';
         /** @type {object[]} */
         this._songs = [];
 
@@ -52,8 +52,12 @@ export class SceneController {
         const prev = this._currentScene;
         this._currentScene = sceneName;
         this._bus.emit('SCENE_CHANGED', { previousScene: prev, nextScene: sceneName });
+        this._setStartShellMode(sceneName === 'start');
 
         switch (sceneName) {
+            case 'start':
+                this._renderStart();
+                break;
             case 'menu':
                 this._renderMenu();
                 break;
@@ -121,6 +125,7 @@ export class SceneController {
 
         this._statusEl = shell.querySelector('#status-line');
         this._footerEl = shell.querySelector('#app-footer');
+        this._shell = shell;
         const host = shell.querySelector('#playfield-host');
 
         this._gameView.mount(host);
@@ -162,7 +167,7 @@ export class SceneController {
 
         try {
             this._songs = await this._play.loadSongList();
-            this.goTo('menu');
+            this.goTo('start');
         } catch (err) {
             this.goTo('error', { message: err.message });
         }
@@ -175,6 +180,24 @@ export class SceneController {
         } else {
             document.exitFullscreen?.() || document.webkitExitFullscreen?.();
         }
+    }
+
+    /** @private */
+    _setStartShellMode(isStart) {
+        if (!this._shell) return;
+        this._shell.classList.toggle('app-shell-start', Boolean(isStart));
+    }
+
+    /** @private */
+    _renderStart() {
+        this._statusEl.textContent = `${this._songs.length} song(s) ready`;
+        this._footerEl.innerHTML = '';
+
+        this._gameView.showStartScreen({
+            songCount: this._songs.length,
+            onStart: () => this.goTo('menu'),
+            onSettings: () => this.goTo('menu'),
+        });
     }
 
     /** @private */

@@ -2,6 +2,7 @@ import { LaneView } from './LaneView.js';
 import { NoteView } from './NoteView.js';
 import { HUDView } from './HUDView.js';
 import { EffectView } from './EffectView.js';
+import { StartScreenView } from './startscreen/StartScreenView.js';
 import { getFallbackSvg, attachFallback } from './ImageFallback.js';
 import { preloadAll } from './AssetLoader.js';
 
@@ -19,6 +20,7 @@ export class GameView {
         this._noteView = new NoteView();
         this._hudView = new HUDView();
         this._effectView = new EffectView();
+        this._startScreenView = new StartScreenView();
         this._playfield = null;
         this._overlay = null;
         this._laneCount = 4;
@@ -131,9 +133,28 @@ export class GameView {
      */
     render(snapshot) {
         if (!this._playfield) return;
+        this._clearStartScreen();
         this._hideOverlay();
         this._hudView.render(snapshot);
         this._noteView.render(snapshot.visibleNotes, this._laneCount);
+    }
+
+    /**
+     * Show custom start screen.
+     *
+     * Args:
+     *   options (object): { songCount, onStart, onSettings }
+     *
+     * Returns:
+     *   void
+     *
+     * Raises:
+     *   None
+     */
+    showStartScreen(options = {}) {
+        if (!this._overlay) return;
+        this._showOverlay();
+        this._startScreenView.render(this._overlay, options);
     }
 
     /**
@@ -185,6 +206,7 @@ export class GameView {
      */
     showSongList(songSummaries) {
         if (!this._overlay) return;
+        this._clearStartScreen();
         this._showOverlay();
         this._overlay.innerHTML = `
             <div>
@@ -240,6 +262,7 @@ export class GameView {
      */
     showSongDetails(songDetails) {
         if (!this._overlay) return;
+        this._clearStartScreen();
         this._showOverlay();
         this._overlay.innerHTML = `
             <div class="song-detail">
@@ -263,6 +286,7 @@ export class GameView {
      */
     showChartOptions(chartDescriptors) {
         if (!this._overlay) return;
+        this._clearStartScreen();
         this._showOverlay();
         this._overlay.innerHTML = `
             <div class="chart-options-wrap">
@@ -294,6 +318,7 @@ export class GameView {
      */
     showLoading() {
         if (!this._overlay) return;
+        this._clearStartScreen();
         this._showOverlay();
         this._overlay.innerHTML = `
             <div class="loading-wrap">
@@ -334,6 +359,7 @@ export class GameView {
      */
     showError(message) {
         if (!this._overlay) return;
+        this._clearStartScreen();
         this._showOverlay();
         this._overlay.innerHTML = `<div class="error-msg">⚠ ${_esc(message)}</div>`;
     }
@@ -352,6 +378,7 @@ export class GameView {
      */
     showResult(resultData) {
         if (!this._overlay) return;
+        this._clearStartScreen();
         this._showOverlay();
         const pct = (resultData.accuracy * 100).toFixed(2);
 
@@ -411,6 +438,7 @@ export class GameView {
      */
     showPause() {
         if (!this._overlay) return;
+        this._clearStartScreen();
         this._showOverlay();
         this._overlay.className = 'overlay pause-overlay';
         this._overlay.innerHTML = `<div class="pause-title">Paused</div>`;
@@ -430,6 +458,7 @@ export class GameView {
      */
     hidePause() {
         if (!this._overlay) return;
+        this._clearStartScreen();
         this._overlay.className = 'overlay';
         this._hideOverlay();
     }
@@ -444,7 +473,13 @@ export class GameView {
 
     /** @private */
     _hideOverlay() {
+        this._clearStartScreen();
         if (this._overlay) this._overlay.style.display = 'none';
+    }
+
+    /** @private */
+    _clearStartScreen() {
+        this._startScreenView.destroy();
     }
 }
 
