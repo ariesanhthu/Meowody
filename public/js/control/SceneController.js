@@ -52,7 +52,7 @@ export class SceneController {
         const prev = this._currentScene;
         this._currentScene = sceneName;
         this._bus.emit('SCENE_CHANGED', { previousScene: prev, nextScene: sceneName });
-        this._setStartShellMode(sceneName === 'start');
+        this._setShellMode(sceneName);
 
         switch (sceneName) {
             case 'start':
@@ -131,9 +131,10 @@ export class SceneController {
         this._gameView.mount(host);
         await this._gameView.loadAssets();
 
-        const { laneView, effectView } = this._gameView.getSubViews();
+        const { laneView, effectView, gameScreenView } = this._gameView.getSubViews();
         this._laneView = laneView;
         this._effectView = effectView;
+        this._gameScreenView = gameScreenView;
 
         shell.querySelector('#btn-fs').addEventListener('click', () => this._toggleFullscreen());
 
@@ -141,7 +142,24 @@ export class SceneController {
             this._play.handleLaneInput(data.laneIndex);
             if (this._laneView) this._laneView.flashPressed(data.laneIndex, 100);
             if (this._effectView) this._effectView.flashLane(data.laneIndex, 4);
+            if (this._gameScreenView) this._gameScreenView.animatePaw(data.laneIndex, 4, data.key);
         });
+
+        if (this._gameScreenView) {
+            this._gameScreenView.bindControls({
+                onTogglePause: () => {
+                    if (this._currentScene === 'playing') {
+                        this._onPause();
+                    } else if (this._currentScene === 'paused') {
+                        this._onResume();
+                    }
+                },
+                onBack: () => {
+                    this._play.stopPlayback();
+                    this.goTo('menu');
+                }
+            });
+        }
 
         this._bus.on('NOTE_HIT', (data) => {
             if (this._effectView) {
@@ -183,9 +201,11 @@ export class SceneController {
     }
 
     /** @private */
-    _setStartShellMode(isStart) {
+    _setShellMode(sceneName) {
         if (!this._shell) return;
-        this._shell.classList.toggle('app-shell-start', Boolean(isStart));
+        this._shell.classList.toggle('app-shell-start', sceneName === 'start');
+        this._shell.classList.toggle('app-shell-menu', sceneName === 'menu');
+        this._shell.classList.toggle('app-shell-playing', sceneName === 'playing');
     }
 
     /** @private */
@@ -203,17 +223,12 @@ export class SceneController {
     /** @private */
     _renderMenu() {
         this._statusEl.textContent = `${this._songs.length} song(s) available`;
-        this._gameView.showSongList(this._songs);
         this._footerEl.innerHTML = '';
 
-        const list = this._container.querySelector('.song-list');
-        if (list) {
-            list.addEventListener('click', (e) => {
-                const item = e.target.closest('[data-song-id]');
-                if (!item) return;
-                this._onSelectSong(item.dataset.songId);
-            });
-        }
+        this._gameView.showSongList(this._songs, {
+            onSelectSong: (songId) => this._onSelectSong(songId),
+            onBack: () => this.goTo('start'),
+        });
     }
 
     /** @private */
@@ -224,6 +239,7 @@ export class SceneController {
         try {
             const details = await this._play.selectSong(songId);
             if (details.availableCharts && details.availableCharts.length > 0) {
+                this._setShellMode('menu');
                 this._gameView.showChartOptions(details.availableCharts);
                 this._statusEl.textContent = `${details.title} — choose difficulty`;
                 this._currentScene = 'menu';
@@ -254,17 +270,12 @@ export class SceneController {
             this._currentScene = 'ready';
 
             this._footerEl.innerHTML = '';
-            const btnPlay = document.createElement('button');
-            btnPlay.className = 'btn primary';
-            btnPlay.textContent = 'PLAY';
-            btnPlay.addEventListener('click', () => this._onPlay());
-            this._footerEl.appendChild(btnPlay);
+            
+            // Auto start the playback after a 3-2-1 countdown
+            this._gameView.showCountdown(() => {
+                this._onPlay();
+            });
 
-            const btnBack = document.createElement('button');
-            btnBack.className = 'btn';
-            btnBack.textContent = 'BACK';
-            btnBack.addEventListener('click', () => this.goTo('menu'));
-            this._footerEl.appendChild(btnBack);
         } catch (err) {
             this.goTo('error', { message: err.message });
         }
@@ -275,15 +286,8 @@ export class SceneController {
         try {
             this._input.bind();
             this._footerEl.innerHTML = '';
-
-            const btnPause = document.createElement('button');
-            btnPause.className = 'btn';
-            btnPause.textContent = 'PAUSE';
-            btnPause.addEventListener('click', () => this._onPause());
-            this._footerEl.appendChild(btnPause);
-
-            this._statusEl.textContent = 'Playing';
             this._currentScene = 'playing';
+            this._setShellMode('playing');
             await this._play.start();
         } catch (err) {
             this.goTo('error', { message: err.message });
@@ -294,41 +298,17 @@ export class SceneController {
     _onPause() {
         this._play.pause();
         this._currentScene = 'paused';
-        this._statusEl.textContent = 'Paused';
         this._input.unbind();
-        this._gameView.showPause();
-
-        this._footerEl.innerHTML = '';
-        const btnResume = document.createElement('button');
-        btnResume.className = 'btn primary';
-        btnResume.textContent = 'RESUME';
-        btnResume.addEventListener('click', () => this._onResume());
-        this._footerEl.appendChild(btnResume);
-
-        const btnMenu = document.createElement('button');
-        btnMenu.className = 'btn';
-        btnMenu.textContent = 'MENU';
-        btnMenu.addEventListener('click', () => {
-            this._play.stopPlayback();
-            this.goTo('menu');
-        });
-        this._footerEl.appendChild(btnMenu);
+        if (this._gameScreenView) this._gameScreenView.setPaused(true);
     }
 
     /** @private */
     _onResume() {
         this._play.resume();
         this._currentScene = 'playing';
-        this._statusEl.textContent = 'Playing';
+        this._setShellMode('playing');
         this._input.bind();
-        this._gameView.hidePause();
-
-        this._footerEl.innerHTML = '';
-        const btnPause = document.createElement('button');
-        btnPause.className = 'btn';
-        btnPause.textContent = 'PAUSE';
-        btnPause.addEventListener('click', () => this._onPause());
-        this._footerEl.appendChild(btnPause);
+        if (this._gameScreenView) this._gameScreenView.setPaused(false);
     }
 
     /** @private */

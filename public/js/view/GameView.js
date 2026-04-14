@@ -3,6 +3,8 @@ import { NoteView } from './NoteView.js';
 import { HUDView } from './HUDView.js';
 import { EffectView } from './EffectView.js';
 import { StartScreenView } from './startscreen/StartScreenView.js';
+import { SelectScreenView } from './songSelectionScreen/SelectScreenView.js';
+import { GameScreenView } from './gameScreen/GameScreenView.js';
 import { getFallbackSvg, attachFallback } from './ImageFallback.js';
 import { preloadAll } from './AssetLoader.js';
 
@@ -21,6 +23,8 @@ export class GameView {
         this._hudView = new HUDView();
         this._effectView = new EffectView();
         this._startScreenView = new StartScreenView();
+        this._selectScreenView = new SelectScreenView();
+        this._gameScreenView = new GameScreenView();
         this._playfield = null;
         this._overlay = null;
         this._laneCount = 4;
@@ -42,30 +46,16 @@ export class GameView {
         this._root = host;
         this._root.innerHTML = '';
 
-        const wrap = document.createElement('div');
-        wrap.className = 'playfield';
-        wrap.innerHTML = `
-            <div class="hud-slot"></div>
-            <div class="lanes-wrap">
-                <div class="lanes"></div>
-                <div class="hit-line">
-                    <div class="hit-line-segment"></div>
-                    <div class="hit-line-segment"></div>
-                    <div class="hit-line-segment"></div>
-                    <div class="hit-line-segment"></div>
-                </div>
-                <div class="notes-layer"></div>
-            </div>
-            <div class="overlay"></div>
-        `;
-        this._root.appendChild(wrap);
-        this._playfield = wrap;
-        this._overlay = wrap.querySelector('.overlay');
+        this._gameScreenView.mount(host, this._laneCount);
+        const c = this._gameScreenView.getContainers();
 
-        this._laneView.render(wrap.querySelector('.lanes'), this._laneCount);
-        this._hudView.mount(wrap.querySelector('.hud-slot'));
-        this._noteView.setLayer(wrap.querySelector('.notes-layer'));
-        this._effectView.mount(wrap);
+        this._playfield = c.playfield;
+        this._overlay = c.overlay;
+
+        this._laneView.render(c.lanes, this._laneCount);
+        this._hudView.mount(c.hudSlot);
+        this._noteView.setLayer(c.notesLayer);
+        this._effectView.mount(c.playfield);
     }
 
     /**
@@ -136,6 +126,7 @@ export class GameView {
         this._clearStartScreen();
         this._hideOverlay();
         this._hudView.render(snapshot);
+        this._gameScreenView.render(snapshot);
         this._noteView.render(snapshot.visibleNotes, this._laneCount);
     }
 
@@ -173,6 +164,7 @@ export class GameView {
         return {
             laneView: this._laneView,
             effectView: this._effectView,
+            gameScreenView: this._gameScreenView,
         };
     }
 
@@ -193,10 +185,11 @@ export class GameView {
     }
 
     /**
-     * Show song list with thumbnails and image fallbacks.
+     * Show paw-themed song selection screen with vinyl disks.
      *
      * Args:
      *   songSummaries (object[]): Array of SongSummary.
+     *   options (object): { onSelectSong, onBack } callbacks.
      *
      * Returns:
      *   void
@@ -204,48 +197,15 @@ export class GameView {
      * Raises:
      *   None
      */
-    showSongList(songSummaries) {
+    showSongList(songSummaries, options = {}) {
         if (!this._overlay) return;
         this._clearStartScreen();
         this._showOverlay();
-        this._overlay.innerHTML = `
-            <div>
-                <div class="menu-title">Select Song</div>
-                <div class="song-list"></div>
-            </div>
-        `;
-        const list = this._overlay.querySelector('.song-list');
-
-        for (const s of songSummaries) {
-            const item = document.createElement('div');
-            item.className = 'song-item';
-            item.dataset.songId = s.id;
-
-            const img = document.createElement('img');
-            img.className = 'song-thumb';
-            img.alt = s.title || '';
-            img.src = s.bannerUrl || s.audioUrl?.replace(/\.[^.]+$/, '-bn.png') || '';
-            attachFallback(img, 'thumbnail', 96, 96);
-            if (!img.src || img.src === window.location.href) {
-                img.src = getFallbackSvg('thumbnail', 96, 96);
-            }
-
-            const info = document.createElement('div');
-            info.className = 'song-info';
-            info.innerHTML = `
-                <div class="song-title">${_esc(s.title)}</div>
-                <div class="song-artist">${_esc(s.artist)}</div>
-            `;
-
-            const charts = document.createElement('span');
-            charts.className = 'song-charts';
-            charts.textContent = `${s.chartCount || (s.availableCharts && s.availableCharts.length) || 0} chart(s)`;
-
-            item.appendChild(img);
-            item.appendChild(info);
-            item.appendChild(charts);
-            list.appendChild(item);
-        }
+        this._selectScreenView.render(this._overlay, {
+            songs: songSummaries,
+            onSelectSong: options.onSelectSong,
+            onBack: options.onBack,
+        });
     }
 
     /**
@@ -288,20 +248,77 @@ export class GameView {
         if (!this._overlay) return;
         this._clearStartScreen();
         this._showOverlay();
+        this._overlay.classList.add('select-overlay');
         this._overlay.innerHTML = `
-            <div class="chart-options-wrap">
-                <div class="chart-options-title">Select Difficulty</div>
-                <div class="chart-options"></div>
-            </div>
+            <section class="select-screen select-chart-screen" aria-label="Difficulty selection">
+                <div class="select-frame">
+                    <img
+                        class="select-frame-bg"
+                        src="assets/song_selection_screen/song_select_bg.png"
+                        alt=""
+                        aria-hidden="true"
+                        draggable="false"
+                    >
+                    <div class="select-content select-chart-content">
+                        <div class="select-title">Select Difficulty</div>
+                        <div class="chart-options select-chart-options"></div>
+                    </div>
+                </div>
+            </section>
         `;
         const wrap = this._overlay.querySelector('.chart-options');
         for (const c of chartDescriptors) {
             const btn = document.createElement('button');
-            btn.className = 'btn chart-btn';
+            btn.className = 'chart-select-btn';
             btn.dataset.chartId = c.chartId;
-            btn.innerHTML = `<span class="meter">${c.meter}</span>${_esc(c.difficulty)}`;
+            btn.innerHTML = `
+                <span class="meter">${c.meter}</span>
+                <span class="chart-name">${_esc(c.difficulty)}</span>
+            `;
             wrap.appendChild(btn);
         }
+    }
+
+    /**
+     * Show a 3-2-1 countdown before auto-playing.
+     *
+     * Args:
+     *   onComplete (Function)
+     */
+    showCountdown(onComplete) {
+        if (!this._overlay) return;
+        this._clearStartScreen();
+        this._showOverlay();
+        this._overlay.className = 'overlay countdown-overlay';
+        this._overlay.innerHTML = `
+            <div class="countdown-wrap">
+                <div class="countdown-number" id="countdown-val">3</div>
+            </div>
+        `;
+        
+        const cVal = this._overlay.querySelector('#countdown-val');
+        let count = 3;
+        const tick = () => {
+            if (count > 0) {
+                if (cVal) cVal.textContent = String(count);
+                if (window.anime) {
+                    window.anime.remove(cVal);
+                    window.anime({
+                        targets: cVal,
+                        scale: [0.5, 1.2, 1],
+                        opacity: [0, 1, 0.8],
+                        duration: 800,
+                        easing: 'easeOutElastic(1, .5)'
+                    });
+                }
+                count--;
+                setTimeout(tick, 1000);
+            } else {
+                this._hideOverlay();
+                if (onComplete) onComplete();
+            }
+        };
+        tick();
     }
 
     /**
@@ -436,12 +453,33 @@ export class GameView {
      * Raises:
      *   None
      */
-    showPause() {
+    showPause(options = {}) {
         if (!this._overlay) return;
         this._clearStartScreen();
         this._showOverlay();
         this._overlay.className = 'overlay pause-overlay';
-        this._overlay.innerHTML = `<div class="pause-title">Paused</div>`;
+        this._overlay.innerHTML = `
+            <div class="pause-title">Paused</div>
+            <div class="gs-pause-actions"></div>
+        `;
+
+        const wrap = this._overlay.querySelector('.gs-pause-actions');
+
+        if (typeof options.onResume === 'function') {
+            const btn = document.createElement('button');
+            btn.className = 'btn primary';
+            btn.textContent = 'RESUME';
+            btn.addEventListener('click', options.onResume);
+            wrap.appendChild(btn);
+        }
+
+        if (typeof options.onMenu === 'function') {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.textContent = 'MENU';
+            btn.addEventListener('click', options.onMenu);
+            wrap.appendChild(btn);
+        }
     }
 
     /**
@@ -480,6 +518,7 @@ export class GameView {
     /** @private */
     _clearStartScreen() {
         this._startScreenView.destroy();
+        this._selectScreenView.destroy();
     }
 }
 

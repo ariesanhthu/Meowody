@@ -695,3 +695,71 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
+
+/*UPDATE 2026-04-11*/
+/* vị trí của các layer */
+.effects-ambient-layer,
+.effects-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* z-index của các layer */
+.effects-ambient-layer {
+    z-index: 1;
+}
+
+.effects-layer {
+    z-index: 6;
+}
+
+/* ambient glow của các lane */
+.lane-ambient-glow {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    opacity: 0.05;
+    transform-origin: center bottom;
+    mix-blend-mode: screen;
+}
+
+/* Kết quả đánh giá */
+.judge-fx {
+    position: absolute;
+    transform: translateX(-50%);
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    will-change: transform, opacity;
+}
+
+/* lane flash */
+.lane-flash {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    will-change: opacity;
+}
+
+.hit-burst,
+.miss-burst {
+    position: absolute;
+    width: 84px;
+    height: 84px;
+    transform: translate(-50%, 50%);
+    border-radius: 50%;
+    will-change: transform, opacity;
+}
+
+.hit-burst {
+    border: 3px solid #fff;
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.25);
+}
+
+.miss-burst {
+    border: 2px solid rgba(255, 90, 111, 0.6);
+    box-shadow: 0 0 12px rgba(255, 90, 111, 0.18);
+}

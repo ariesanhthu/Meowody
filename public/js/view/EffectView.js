@@ -1,3 +1,5 @@
+import CFG from './gameScreen/GameScreenConfig.js';
+
 /**
  * Visual-only effects: judgement text spawn, lane flash, result entrance.
  * Uses Anime.js for animation. Never decides note timing, scoring, or judgement.
@@ -52,6 +54,7 @@ export class EffectView {
      */
     spawnJudgement(laneIndex, judgement, laneCount = 4) {
         if (!this._layer || typeof anime === 'undefined') return;
+        const jCfg = CFG.judgement || {};
 
         const el = document.createElement('div');
         el.className = 'judge-fx';
@@ -61,10 +64,11 @@ export class EffectView {
         el.style.color = color;
         el.style.textShadow = `0 0 12px ${color}`;
 
-        const pct = ((laneIndex + 0.5) / laneCount) * 100;
-        el.style.left = `${pct}%`;
+        const geo = this._getLaneGeometry(laneIndex, laneCount);
+        const laneXOffset = Array.isArray(jCfg.offsetXPerLanePx) ? (jCfg.offsetXPerLanePx[laneIndex] || 0) : 0;
+        el.style.left = `${geo.centerX + laneXOffset}px`;
         el.style.transform = 'translateX(-50%)';
-        el.style.bottom = '110px';
+        el.style.bottom = `${geo.hitBottomPx + (jCfg.baseOffsetYFromHitPx ?? 24)}px`;
         el.style.opacity = '0';
 
         this._layer.appendChild(el);
@@ -74,9 +78,15 @@ export class EffectView {
         anime({
             targets: el,
             opacity: [0, 1, 1, 0],
-            translateY: isMiss ? [0, 10] : [0, -28],
-            scale: isMiss ? [0.9, 1] : [1.3, 1],
-            duration: isMiss ? 500 : 450,
+            translateY: isMiss
+                ? [0, jCfg.missDropPx ?? 10]
+                : [0, -(jCfg.perfectRisePx ?? 28)],
+            scale: isMiss
+                ? [jCfg.missScaleFrom ?? 0.9, 1]
+                : [jCfg.perfectScaleFrom ?? 1.3, 1],
+            duration: isMiss
+                ? (jCfg.missDurationMs ?? 500)
+                : (jCfg.perfectDurationMs ?? 450),
             easing: 'easeOutCubic',
             complete: () => el.remove(),
         });
@@ -100,9 +110,9 @@ export class EffectView {
 
         const el = document.createElement('div');
         el.className = 'lane-flash';
-        const widthPct = 100 / laneCount;
-        el.style.width = `${widthPct}%`;
-        el.style.left = `${widthPct * laneIndex}%`;
+        const geo = this._getLaneGeometry(laneIndex, laneCount);
+        el.style.width = `${geo.laneWidth}px`;
+        el.style.left = `${geo.laneStartX}px`;
         const color = LANE_COLORS[laneIndex] || '#fff';
         el.style.background = `linear-gradient(0deg, ${color}22 0%, transparent 60%)`;
 
@@ -151,5 +161,44 @@ export class EffectView {
                 easing: 'easeOutCubic',
             });
         }
+    }
+
+    /**
+     * Compute lane center in percentage of full playfield width.
+     *
+     * Args:
+     *   laneIndex (number): Current lane index.
+     *   laneCount (number): Total lane count.
+     *
+     * Returns:
+     *   number
+     *
+     * Raises:
+     *   None
+     */
+    _getLaneGeometry(laneIndex, laneCount) {
+        const layerRect = this._layer.getBoundingClientRect();
+        const lanesEl = this._layer.parentElement?.querySelector('.lanes');
+        const hitLineEl = this._layer.parentElement?.querySelector('.hit-line');
+
+        if (!lanesEl) {
+            const fallbackLaneWidth = layerRect.width / laneCount;
+            return {
+                laneWidth: fallbackLaneWidth,
+                laneStartX: fallbackLaneWidth * laneIndex,
+                centerX: fallbackLaneWidth * (laneIndex + 0.5),
+                hitBottomPx: 100,
+            };
+        }
+
+        const lanesRect = lanesEl.getBoundingClientRect();
+        const laneWidth = lanesRect.width / laneCount;
+        const laneStartX = lanesRect.left - layerRect.left + laneWidth * laneIndex;
+        const centerX = laneStartX + laneWidth / 2;
+        const hitBottomPx = hitLineEl
+            ? hitLineEl.getBoundingClientRect().bottom - layerRect.top
+            : layerRect.height * 0.8;
+
+        return { laneWidth, laneStartX, centerX, hitBottomPx };
     }
 }

@@ -1,7 +1,9 @@
 /** @typedef {import('../model/DataModels.js').RenderNote} RenderNote */
 
+const NOTE_SRC = 'assets/game_screen/note.png';
+
 /**
- * Renders note sprites with per-lane colors. Position driven by render snapshot only.
+ * Renders note sprites as <img> elements. Position driven by render snapshot only.
  */
 export class NoteView {
     constructor() {
@@ -26,7 +28,7 @@ export class NoteView {
     }
 
     /**
-     * Draw visible notes for this frame with per-lane coloring.
+     * Draw visible notes for this frame using <img> elements.
      *
      * Args:
      *   notes (RenderNote[]): Visible notes from snapshot.
@@ -45,13 +47,16 @@ export class NoteView {
         const laneWidthPct = 100 / laneCount;
 
         for (const n of notes) {
-            const el = document.createElement('div');
-            el.className = 'note';
-            el.dataset.id = n.id;
-            el.dataset.lane = String(n.laneIndex);
-            el.style.top = `${n.y}px`;
-            el.style.left = `${laneWidthPct * n.laneIndex + laneWidthPct / 2}%`;
-            frag.appendChild(el);
+            const img = document.createElement('img');
+            img.className = 'note';
+            img.src = NOTE_SRC;
+            img.alt = '';
+            img.draggable = false;
+            img.dataset.id = n.id;
+            img.dataset.lane = String(n.laneIndex);
+            img.style.top = `${n.y}px`;
+            img.style.left = `${laneWidthPct * n.laneIndex + laneWidthPct / 2}%`;
+            frag.appendChild(img);
         }
         this._layer.appendChild(frag);
     }
