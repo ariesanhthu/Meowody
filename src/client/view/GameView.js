@@ -2,6 +2,7 @@ import { LaneView } from './LaneView.js';
 import { NoteView } from './NoteView.js';
 import { HUDView } from './HUDView.js';
 import { EffectView } from './EffectView.js';
+import { ScreenEffectView } from './ScreenEffectView.js';
 import { StartScreenView } from './startscreen/StartScreenView.js';
 import { SelectScreenView } from './songSelectionScreen/SelectScreenView.js';
 import { GameScreenView } from './gameScreen/GameScreenView.js';
@@ -22,6 +23,7 @@ export class GameView {
         this._noteView = new NoteView();
         this._hudView = new HUDView();
         this._effectView = new EffectView();
+        this._screenEffectView = new ScreenEffectView();
         this._startScreenView = new StartScreenView();
         this._selectScreenView = new SelectScreenView();
         this._gameScreenView = new GameScreenView();
@@ -56,6 +58,7 @@ export class GameView {
         this._hudView.mount(c.hudSlot);
         this._noteView.setLayer(c.notesLayer);
         this._effectView.mount(c.playfield);
+        this._screenEffectView.mount(c.playfield);
     }
 
     /**
@@ -165,6 +168,7 @@ export class GameView {
         return {
             laneView: this._laneView,
             effectView: this._effectView,
+            screenEffectView: this._screenEffectView,
             gameScreenView: this._gameScreenView,
         };
     }
@@ -386,7 +390,7 @@ export class GameView {
      * Show polished result screen with Anime.js entrance.
      *
      * Args:
-     *   resultData (object): { score, accuracy, maxCombo, perfect, great, good, miss }
+     *   resultData (object): { score, accuracy, maxCombo, perfect, great, good, miss, onRestart, onMenu }
      *
      * Returns:
      *   void
@@ -433,12 +437,25 @@ export class GameView {
                         <span class="result-judge-count">${resultData.miss}</span>
                     </div>
                 </div>
+                <div class="result-actions">
+                    <button class="btn primary" id="result-btn-restart">RESTART</button>
+                    <button class="btn" id="result-btn-menu">MENU</button>
+                </div>
             </div>
         `;
 
         const panel = this._overlay.querySelector('#result-panel');
         if (panel) {
             this._effectView.animateResultEntrance(panel);
+        }
+
+        const restartBtn = this._overlay.querySelector('#result-btn-restart');
+        const menuBtn = this._overlay.querySelector('#result-btn-menu');
+        if (restartBtn && typeof resultData.onRestart === 'function') {
+            restartBtn.addEventListener('click', resultData.onRestart);
+        }
+        if (menuBtn && typeof resultData.onMenu === 'function') {
+            menuBtn.addEventListener('click', resultData.onMenu);
         }
     }
 

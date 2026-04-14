@@ -33,6 +33,7 @@ export class SceneController {
 
         this._laneView = null;
         this._effectView = null;
+        this._screenEffectView = null;
     }
 
     /**
@@ -131,9 +132,10 @@ export class SceneController {
         this._gameView.mount(host);
         await this._gameView.loadAssets();
 
-        const { laneView, effectView, gameScreenView } = this._gameView.getSubViews();
+        const { laneView, effectView, screenEffectView, gameScreenView } = this._gameView.getSubViews();
         this._laneView = laneView;
         this._effectView = effectView;
+        this._screenEffectView = screenEffectView;
         this._gameScreenView = gameScreenView;
 
         shell.querySelector('#btn-fs').addEventListener('click', () => this._toggleFullscreen());
@@ -145,8 +147,12 @@ export class SceneController {
             if (this._gameScreenView) this._gameScreenView.animatePaw(data.laneIndex, 4, data.key);
         });
 
-        this._bus.on('lane:judge', (data) => {
+        this._bus.on('lane:good', (data) => {
             if (this._laneView) this._laneView.playJudgementEffect(data.laneIndex, data.judgement);
+        });
+
+        this._bus.on('hit:perfect', () => {
+            if (this._screenEffectView) this._screenEffectView.playPerfectEffect();
         });
 
         if (this._gameScreenView) {
@@ -170,16 +176,22 @@ export class SceneController {
                 this._effectView.spawnJudgement(data.laneIndex, data.judgement, 4);
             }
             if (data.judgement === 'good' || data.judgement === 'great') {
-                this._bus.emit('lane:judge', {
+                this._bus.emit('lane:good', {
                     laneIndex: data.laneIndex,
                     judgement: data.judgement,
                 });
+            }
+            if (data.judgement === 'perfect') {
+                this._bus.emit('hit:perfect');
             }
         });
 
         this._bus.on('NOTE_MISSED', (data) => {
             if (this._effectView) {
                 this._effectView.spawnJudgement(data.laneIndex, 'miss', 4);
+            }
+            if (this._screenEffectView) {
+                this._screenEffectView.resetPerfectProgress();
             }
         });
 
@@ -215,7 +227,10 @@ export class SceneController {
         if (!this._shell) return;
         this._shell.classList.toggle('app-shell-start', sceneName === 'start');
         this._shell.classList.toggle('app-shell-menu', sceneName === 'menu');
+        this._shell.classList.toggle('app-shell-loading', sceneName === 'loading');
+        this._shell.classList.toggle('app-shell-ready', sceneName === 'ready');
         this._shell.classList.toggle('app-shell-playing', sceneName === 'playing');
+        this._shell.classList.toggle('app-shell-result', sceneName === 'result');
     }
 
     /** @private */
@@ -278,6 +293,7 @@ export class SceneController {
             this._input.setKeymap(this._play.getKeymap());
             this._statusEl.textContent = 'Ready';
             this._currentScene = 'ready';
+            this._setShellMode('ready');
 
             this._footerEl.innerHTML = '';
             
@@ -325,6 +341,7 @@ export class SceneController {
     _renderResult() {
         const st = this._play.getState();
         this._statusEl.textContent = 'Result';
+        this._footerEl.innerHTML = '';
 
         this._gameView.showResult({
             score: st.score,
@@ -334,37 +351,21 @@ export class SceneController {
             great: st.greatCount,
             good: st.goodCount,
             miss: st.missCount,
+            onRestart: async () => {
+                try {
+                    this._input.bind();
+                    this._statusEl.textContent = 'Playing';
+                    this._currentScene = 'playing';
+                    this._setShellMode('playing');
+                    await this._play.restart();
+                } catch (err) {
+                    this.goTo('error', { message: err.message });
+                }
+            },
+            onMenu: () => {
+                this._play.stopPlayback();
+                this.goTo('menu');
+            },
         });
-
-        this._footerEl.innerHTML = '';
-        const btnRestart = document.createElement('button');
-        btnRestart.className = 'btn primary';
-        btnRestart.textContent = 'RESTART';
-        btnRestart.addEventListener('click', async () => {
-            try {
-                this._input.bind();
-                this._footerEl.innerHTML = '';
-                const btnPause = document.createElement('button');
-                btnPause.className = 'btn';
-                btnPause.textContent = 'PAUSE';
-                btnPause.addEventListener('click', () => this._onPause());
-                this._footerEl.appendChild(btnPause);
-                this._statusEl.textContent = 'Playing';
-                this._currentScene = 'playing';
-                await this._play.restart();
-            } catch (err) {
-                this.goTo('error', { message: err.message });
-            }
-        });
-        this._footerEl.appendChild(btnRestart);
-
-        const btnMenu = document.createElement('button');
-        btnMenu.className = 'btn';
-        btnMenu.textContent = 'MENU';
-        btnMenu.addEventListener('click', () => {
-            this._play.stopPlayback();
-            this.goTo('menu');
-        });
-        this._footerEl.appendChild(btnMenu);
     }
 }

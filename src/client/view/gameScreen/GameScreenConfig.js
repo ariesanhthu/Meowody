@@ -67,10 +67,10 @@ const GameScreenConfig = {
         ],
         // Ưu tiên theo phím bấm thực tế (data.key). Sửa ở đây để chắc chắn "ăn".
         keyTargets: {
-            '1': { side: 'left', xOffsetPx: 250 },
-            '2': { side: 'left', xOffsetPx: 280 },
-            '3': { side: 'right', xOffsetPx: -280 },
-            '4': { side: 'right', xOffsetPx: -250 },
+            '1': { side: 'left', xOffsetPx: 230 },
+            '2': { side: 'left', xOffsetPx: 250 },
+            '3': { side: 'right', xOffsetPx: -250 },
+            '4': { side: 'right', xOffsetPx: -230 },
         },
         moveDurationMs: 100,
         slamUpPx: 14,
@@ -103,7 +103,7 @@ const GameScreenConfig = {
 
     /* ── Debug overlay ── */
     debug: {
-        showCollisionJudgement: true,
+        showCollisionJudgement: false,
         panelTopPx: 12,
         panelRightPx: 12,
     },

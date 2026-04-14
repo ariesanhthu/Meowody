@@ -44,6 +44,84 @@ body {
     overflow: hidden;
 }
 
+/* ─── First-load intro video ─── */
+#intro-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 320ms ease;
+}
+
+body.show-intro #intro-screen {
+    display: flex;
+}
+
+#intro-screen.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#intro-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#intro-skip {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    z-index: 2;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+#intro-sound {
+    position: absolute;
+    right: 120px;
+    bottom: 24px;
+    z-index: 2;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+#intro-skip:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+#intro-loading-text {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    z-index: 2;
+    color: rgba(255, 255, 255, 0.88);
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
 /* ─── Container — fullscreen-first ─── */
 #game-container {
     width: 100vw;
@@ -521,30 +599,56 @@ body {
 
 /* ─── Result Screen ─── */
 .result-panel {
+    position: relative;
     text-align: center;
-    padding: 32px;
+    padding: 34px 30px 30px;
     width: min(480px, 90vw);
+    border: 4px solid #111;
+    border-radius: 14px;
+    background: rgba(245, 243, 239, 0.9);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+    transform: rotate(-0.4deg);
+}
+
+.result-panel::before,
+.result-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.result-panel::before {
+    border: 3px solid rgba(0, 0, 0, 0.38);
+    transform: translate(-1px, 1px);
+}
+
+.result-panel::after {
+    border: 2px solid rgba(0, 0, 0, 0.18);
+    transform: translate(1px, -1px);
 }
 
 .result-header {
-    font-family: var(--font-display);
-    font-size: 0.7rem;
-    letter-spacing: 4px;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 0.92rem;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
+    color: #111;
+    margin-bottom: 10px;
+    opacity: 0.86;
 }
 
 .result-score {
-    font-family: var(--font-display);
+    font-family: 'Permanent Marker', cursive;
     font-size: 3.2rem;
-    font-weight: 900;
+    font-weight: 700;
     background: linear-gradient(135deg, #ffd700, #ff9100);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 16px;
-    text-shadow: none;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.08);
 }
 
 .result-stats {
@@ -562,18 +666,19 @@ body {
 }
 
 .result-stat-label {
-    font-size: 0.6rem;
+    font-size: 0.64rem;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--text-dim);
-    font-family: var(--font-display);
+    color: rgba(17, 17, 17, 0.72);
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-weight: 700;
 }
 
 .result-stat-value {
-    font-family: var(--font-display);
+    font-family: 'Permanent Marker', cursive;
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #111;
 }
 
 .result-judges {
@@ -584,28 +689,54 @@ body {
 }
 
 .result-judge {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
     min-width: 70px;
-    padding: 10px 14px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 8px;
-    border: 1px solid var(--border-dim);
+    padding: 11px 14px 10px;
+    background: rgba(255, 255, 255, 0.28);
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 0.72);
+    transform: rotate(-0.8deg);
 }
 
 .result-judge-label {
-    font-family: var(--font-display);
-    font-size: 0.55rem;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.6rem;
     letter-spacing: 2px;
     text-transform: uppercase;
+    font-weight: 700;
 }
 
 .result-judge-count {
-    font-family: var(--font-display);
+    font-family: 'Permanent Marker', cursive;
     font-size: 1.3rem;
     font-weight: 700;
+}
+
+.result-judge:nth-child(2n) {
+    transform: rotate(0.75deg);
+}
+
+.result-judge::before,
+.result-judge::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.result-judge::before {
+    border: 2px solid rgba(0, 0, 0, 0.24);
+    transform: translate(-1px, 1px);
+}
+
+.result-judge::after {
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    transform: translate(1px, -1px);
 }
 
 /* Judgement colors */
@@ -615,9 +746,16 @@ body {
 .j-miss, .j-miss .result-judge-label, .j-miss .result-judge-count { color: #ff5555; }
 
 .result-divider {
-    height: 1px;
-    background: var(--border-dim);
+    height: 5px;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.12),
+        rgba(0, 0, 0, 0.5),
+        rgba(0, 0, 0, 0.12)
+    );
     margin: 20px 0;
+    transform: rotate(-0.35deg);
 }
 
 /* ─── Footer ─── */

@@ -5,8 +5,14 @@
    ═══════════════════════════════════════════════ */
 
 /* ─── Hide chrome during gameplay ─── */
+.app-shell-loading .app-header,
+.app-shell-ready .app-header,
 .app-shell-playing .app-header,
-.app-shell-playing .app-footer {
+.app-shell-result .app-header,
+.app-shell-loading .app-footer,
+.app-shell-ready .app-footer,
+.app-shell-playing .app-footer,
+.app-shell-result .app-footer {
     display: none !important;
 }
 
@@ -284,6 +290,46 @@
     gap: 28px;
 }
 
+/* ─── Result actions inside result panel ─── */
+.result-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+}
+
+.result-actions .btn {
+    min-width: 150px;
+    padding: 10px 24px;
+    border: 2px solid rgba(0, 0, 0, 0.72);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.52);
+    color: #111;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+    text-transform: uppercase;
+}
+
+.result-actions .btn.primary {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.8);
+}
+
+.result-actions .btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: #111;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+}
+
+.result-actions .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
 .gs-playfield .pause-title {
     font-family: 'Rajdhani', system-ui, sans-serif;
     font-size: 2.2rem;
@@ -331,6 +377,101 @@
 
 .gs-playfield .lane-flash {
     background: linear-gradient(0deg, rgba(0, 0, 0, 0.06) 0%, transparent 60%) !important;
+}
+
+/* ─── PERFECT fullscreen rainbow overlay ─── */
+.gs-playfield .gs-perfect-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    overflow: hidden;
+    mix-blend-mode: normal;
+    z-index: 9;
+    contain: layout paint style;
+    will-change: opacity;
+}
+
+.gs-playfield .gs-perfect-rainbow,
+.gs-playfield .gs-perfect-rainbow-2 {
+    position: absolute;
+    inset: -28%;
+    opacity: 0;
+    filter: blur(26px) saturate(1.45);
+    transform: translate3d(0, 0, 0) scale(0.85);
+    will-change: transform, opacity;
+}
+
+.gs-playfield .gs-perfect-rainbow {
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.34) 0%, transparent 18%),
+        radial-gradient(circle at 62% 42%, rgba(255, 127, 0, 0.28) 0%, transparent 20%),
+        radial-gradient(circle at 68% 58%, rgba(255, 255, 0, 0.22) 0%, transparent 20%),
+        radial-gradient(circle at 50% 68%, rgba(0, 255, 0, 0.22) 0%, transparent 22%),
+        radial-gradient(circle at 35% 62%, rgba(0, 180, 255, 0.22) 0%, transparent 22%),
+        radial-gradient(circle at 30% 40%, rgba(75, 0, 130, 0.24) 0%, transparent 20%),
+        radial-gradient(circle at 48% 28%, rgba(148, 0, 211, 0.26) 0%, transparent 18%);
+}
+
+.gs-playfield .gs-perfect-rainbow-2 {
+    background:
+        radial-gradient(circle at 45% 45%, rgba(255, 255, 255, 0.2) 0%, transparent 16%),
+        conic-gradient(
+            from 0deg,
+            rgba(255, 0, 0, 0.16),
+            rgba(255, 127, 0, 0.16),
+            rgba(255, 255, 0, 0.16),
+            rgba(0, 255, 0, 0.16),
+            rgba(0, 180, 255, 0.16),
+            rgba(75, 0, 130, 0.16),
+            rgba(148, 0, 211, 0.16),
+            rgba(255, 0, 0, 0.16)
+        );
+}
+
+.gs-playfield .gs-perfect-overlay::before {
+    content: '';
+    position: absolute;
+    inset: -6%;
+    opacity: 0.52;
+    background:
+        linear-gradient(
+            120deg,
+            rgba(255, 0, 0, 0.08) 0%,
+            rgba(255, 127, 0, 0.08) 14%,
+            rgba(255, 255, 0, 0.075) 28%,
+            rgba(0, 255, 0, 0.075) 42%,
+            rgba(0, 180, 255, 0.075) 57%,
+            rgba(75, 0, 130, 0.08) 75%,
+            rgba(148, 0, 211, 0.08) 100%
+        );
+    will-change: opacity;
+}
+
+.gs-playfield .gs-perfect-pulse {
+    position: absolute;
+    left: 50%;
+    bottom: 80px;
+    width: 180px;
+    height: 180px;
+    border-radius: 999px;
+    transform: translateX(-50%) translate3d(0, 0, 0) scale(0.2);
+    opacity: 0;
+    pointer-events: none;
+    filter: blur(14px);
+    will-change: transform, opacity;
+    background:
+        conic-gradient(
+            from 0deg,
+            rgba(255, 0, 0, 0.55),
+            rgba(255, 127, 0, 0.55),
+            rgba(255, 255, 0, 0.55),
+            rgba(0, 255, 0, 0.55),
+            rgba(0, 180, 255, 0.55),
+            rgba(75, 0, 130, 0.55),
+            rgba(148, 0, 211, 0.55),
+            rgba(255, 0, 0, 0.55)
+        );
 }
 
 /* ─── z-index stack ─── */
