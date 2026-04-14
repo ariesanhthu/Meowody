@@ -32,28 +32,29 @@ Server sẽ:
 
 ```text
 project/
-├─ server/
-│  ├─ index.js                       # Express server + port fallback
-│  ├─ SongCatalogService.js          # Quét thư mục bài hát, build catalog
-│  ├─ SscParser.js                   # Parse raw .ssc
-│  ├─ SscTimingResolver.js           # Beat → ms resolver
-│  └─ SscChartExtractor.js           # Chuẩn hóa chart + note events
-├─ public/                            # Static root (served by Express)
+├─ src/
+│  ├─ server/                        # Node.js Express server
+│  │  ├─ index.js                    # Express server + port fallback
+│  │  ├─ SongCatalogService.js       # Quét thư mục bài hát, build catalog
+│  │  ├─ SscParser.js                # Parse raw .ssc
+│  │  ├─ SscTimingResolver.js        # Beat → ms resolver
+│  │  └─ SscChartExtractor.js        # Chuẩn hóa chart + note events
+│  └─ client/                        # Web client (ES Modules API)
+│     ├─ main.js                     # Entry point
+│     ├─ control/                    # SceneController, PlayController, InputController
+│     ├─ data/                       # Repository + Adapter + Validator
+│     ├─ model/                      # GameEngine, GameClock, Judgement, Score, Chart…
+│     ├─ shared/                     # EventBus
+│     └─ view/                       # GameView, NoteView, LaneView, AssetLoader…
+├─ public/                           # Static root (served by Express)
 │  ├─ index.html
 │  ├─ css/style.css
-│  ├─ js/
-│  │  ├─ main.js                     # Entry point
-│  │  ├─ control/                    # SceneController, PlayController, InputController
-│  │  ├─ data/                       # Repository + Adapter + Validator
-│  │  ├─ model/                      # GameEngine, GameClock, Judgement, Score, Chart…
-│  │  ├─ shared/                     # EventBus
-│  │  └─ view/                       # GameView, NoteView, LaneView, AssetLoader…
-│  ├─ data/songs/                    # Simfiles (.ssc) + audio + images
 │  └─ assets/                        # Optional UI sprites (xem bên dưới)
 │     ├─ backgrounds/                # playfield.png
 │     ├─ notes/                      # note-0.png … note-3.png
 │     ├─ receptors/                  # receptor-0.png … receptor-3.png
 │     └─ ui/                         # btn-play.png, btn-pause.png…
+├─ data/songs/                       # Simfiles (.ssc) + audio + images
 └─ .agent/docs/                      # Architecture & build-phase docs
 ```
 
@@ -72,8 +73,8 @@ Xem `public/assets/ASSETS.md` để biết chi tiết.
 
 ## Kiến trúc runtime (ngắn gọn)
 
-1. `server/*` parse `.ssc` và trả payload chart qua API.
-2. `public/js/data/*` validate + adapt payload sang model nội bộ.
+1. `src/server/*` parse `.ssc` và trả payload chart qua API.
+2. `src/client/data/*` validate + adapt payload sang model nội bộ.
 3. `GameClock` lấy thời gian trực tiếp từ audio element (single source of truth).
 4. `GameEngine` dùng thời gian đó để:
    - tick miss
@@ -91,7 +92,7 @@ Xem `public/assets/ASSETS.md` để biết chi tiết.
 
 ## Dữ liệu bài hát
 
-Đặt bài hát vào `public/data/songs/<song-folder>/` với tối thiểu:
+Đặt bài hát vào `data/songs/<song-folder>/` với tối thiểu:
 
 - file nhạc (`.ogg`/`.mp3`/...)
 - file `.ssc`

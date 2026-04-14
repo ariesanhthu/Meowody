@@ -131,6 +131,8 @@
 
 /* ─── Lanes — transparent borders, SVG draws the dividers ─── */
 .gs-playfield .lane {
+    position: relative;
+    overflow: hidden;
     background: transparent !important;
     border-right: var(--gs-lane-divider, 4px) solid transparent !important;
     transition: background 0.06s;
@@ -140,12 +142,65 @@
     border-right: none !important;
 }
 
-.gs-playfield .lane.pressed {
-    background: rgba(0, 0, 0, 0.06) !important;
+.gs-playfield .lane-base {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(13, 13, 13, 0.14), rgba(26, 26, 26, 0.16));
+    pointer-events: none;
+}
+
+.gs-playfield .lane-wave {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 160%;
+    opacity: 0;
+    transform: translateY(100%);
+    pointer-events: none;
+    z-index: 1;
+    background:
+        radial-gradient(circle at 50% 100%, rgba(140, 230, 255, 0.35), transparent 42%),
+        linear-gradient(
+            to top,
+            rgba(40, 170, 255, 0.65) 0%,
+            rgba(70, 200, 255, 0.4) 30%,
+            rgba(120, 230, 255, 0.12) 65%,
+            rgba(255, 255, 255, 0) 100%
+        );
+    filter: blur(8px);
+    mix-blend-mode: screen;
+}
+
+.gs-playfield .lane-content {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+
+.gs-playfield .lane.pressed .lane-base {
+    background: linear-gradient(to bottom, rgba(20, 20, 20, 0.18), rgba(32, 32, 32, 0.22));
 }
 
 .gs-playfield .lane-receptor {
-    display: none !important;
+    display: block !important;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    border: 2px solid #1a1a1a;
+    opacity: 0.42;
+    pointer-events: none;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.24);
+    z-index: 3;
+}
+
+.gs-playfield .lane.pressed .lane-receptor {
+    opacity: 0.78;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.35);
 }
 
 /* ─── Hit line — hidden, SVG draws it ─── */

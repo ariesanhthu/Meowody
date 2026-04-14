@@ -1,9 +1,0 @@
-{
-  "id": "demo-song",
-  "title": "Welcome to Rhythm",
-  "artist": "Agent Composer",
-  "audioUrl": "/assets/demo.wav",
-  "bpm": 120,
-  "durationMs": 45000,
-  "defaultChartId": "demo-normal"
-}
