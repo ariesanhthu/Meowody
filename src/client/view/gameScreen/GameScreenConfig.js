@@ -79,6 +79,21 @@ const GameScreenConfig = {
         returnDurationMs: 180,
     },
 
+    /* ── Cat head (combo pose) ── */
+    catHead: {
+        bottomPct: -20,
+        minWidthPx: 320,
+        preferredVw: 46,
+        maxWidthPx: 800,
+        sideLeftPct: 25,
+        sideRightPct: 75,
+        centerPct: 50,
+        hiddenOffsetPx: 90,
+        xMoveDurationMs: 170,
+        riseDurationMs: 190,
+        hideDurationMs: 140,
+    },
+
     /* ── GUI overlay (fish score + pause icon) ── */
     gui: {
         boardWidthVw: 15,    // Size of the score board relative to screen width

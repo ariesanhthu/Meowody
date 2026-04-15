@@ -11,7 +11,10 @@ export class InputController {
         this._bus = bus;
         /** @type {string[]} */
         this._keymap = ['1', '2', '3', '4'];
+        /** @type {Set<number>} */
+        this._activeLanes = new Set();
         this._onKeyDown = this._onKeyDown.bind(this);
+        this._onKeyUp = this._onKeyUp.bind(this);
         this._onPointerDown = this._onPointerDown.bind(this);
         this._bound = false;
         /** @type {HTMLElement | null} */
@@ -32,6 +35,10 @@ export class InputController {
      */
     setKeymap(keymap) {
         this._keymap = keymap.map(String);
+        if (this._activeLanes.size > 0) {
+            this._activeLanes.clear();
+            this._emitLaneState();
+        }
     }
 
     /**
@@ -70,6 +77,7 @@ export class InputController {
     bind() {
         if (this._bound) return;
         window.addEventListener('keydown', this._onKeyDown);
+        window.addEventListener('keyup', this._onKeyUp);
         this._pointerTarget?.addEventListener('pointerdown', this._onPointerDown);
         this._bound = true;
     }
@@ -89,7 +97,12 @@ export class InputController {
     unbind() {
         if (!this._bound) return;
         window.removeEventListener('keydown', this._onKeyDown);
+        window.removeEventListener('keyup', this._onKeyUp);
         this._pointerTarget?.removeEventListener('pointerdown', this._onPointerDown);
+        if (this._activeLanes.size > 0) {
+            this._activeLanes.clear();
+            this._emitLaneState();
+        }
         this._bound = false;
     }
 
@@ -98,7 +111,22 @@ export class InputController {
         const idx = this._keymap.indexOf(ev.key);
         if (idx < 0) return;
         ev.preventDefault();
+        if (ev.repeat) return;
+        const wasActive = this._activeLanes.has(idx);
+        if (!wasActive) {
+            this._activeLanes.add(idx);
+            this._emitLaneState();
+        }
         this._bus.emit('input:lane', { laneIndex: idx, key: ev.key });
+    }
+
+    /** @param {KeyboardEvent} ev */
+    _onKeyUp(ev) {
+        const idx = this._keymap.indexOf(ev.key);
+        if (idx < 0) return;
+        if (this._activeLanes.delete(idx)) {
+            this._emitLaneState();
+        }
     }
 
     /** @param {PointerEvent} ev */
@@ -128,6 +156,12 @@ export class InputController {
             laneIndex,
             key: this._keymap[laneIndex],
             source: 'pointer',
+        });
+    }
+
+    _emitLaneState() {
+        this._bus.emit('input:lanes-state', {
+            pressedLanes: [...this._activeLanes].sort((a, b) => a - b),
         });
     }
 }
