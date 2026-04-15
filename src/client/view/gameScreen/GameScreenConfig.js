@@ -55,6 +55,14 @@ const GameScreenConfig = {
         minWidthPx: 500,
         preferredVw: 38,
         maxWidthPx: 800,
+        // Scale lane/key target offset by viewport width so paws stay aligned
+        // across smaller and larger screens.
+        targetOffsetResponsive: {
+            enabled: true,
+            referenceWidthPx: 1440,
+            minScale: 0.65,
+            maxScale: 1.2,
+        },
         // lane index 0..3 tương ứng phím 1..4.
         // xOffsetPx: lệch thêm theo trục X so với tâm lane (px).
         // Nếu chart remap key (ví dụ keymap đảo thứ tự), dùng keyTargets bên dưới
