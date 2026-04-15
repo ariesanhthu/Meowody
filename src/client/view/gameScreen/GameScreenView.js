@@ -61,7 +61,6 @@ export class GameScreenView {
                 </div>
                 <div class="gs-top-controls">
                     <img class="gs-ctrl-btn" id="gs-btn-pause" src="${ASSET.pauseBtn}" alt="Pause" draggable="false">
-                    <img class="gs-ctrl-btn" id="gs-btn-back" src="${ASSET.backBtn}" alt="Back" draggable="false">
                 </div>
             </div>
             <div class="gs-hud-slot"></div>
@@ -184,7 +183,7 @@ export class GameScreenView {
         s.setProperty('--gs-score-top', `${gui.scoreTopPct}%`);
         s.setProperty('--gs-score-left', `${gui.scoreLeftPct}%`);
         s.setProperty('--gs-score-fs', `clamp(${minR}rem, ${vw}vw, ${maxR}rem)`);
-        
+
         s.setProperty('--gs-board-w', `${gui.boardWidthVw}vw`);
         s.setProperty('--gs-board-top', `${gui.boardTopPct}%`);
         s.setProperty('--gs-board-left', `${gui.boardLeftPct}%`);
@@ -380,7 +379,7 @@ export class GameScreenView {
             : 'none';
 
         this._collisionDebugEl.textContent =
-`collision/judgement debug
+            `collision/judgement debug
 timeMs: ${Math.round(snapshot.currentTimeMs || 0)}
 lastJudgement: ${snapshot.lastJudgement || 'none'}
 combo: ${snapshot.combo || 0}

@@ -20,6 +20,10 @@
 .gs-playfield {
     background: var(--gs-bg, #f5f3ef) !important;
     background-image: none !important;
+    --gs-lane-0: #ff2d55;
+    --gs-lane-1: #00b8ff;
+    --gs-lane-2: #41d648;
+    --gs-lane-3: #ff9a1a;
 }
 
 .gs-playfield::before {
@@ -53,14 +57,49 @@
 
 .gs-score-value {
     position: absolute;
-    top: var(--gs-score-top, 50%);
-    left: var(--gs-score-left, 50%);
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-family: 'Permanent Marker', cursive;
     font-size: var(--gs-score-fs, clamp(1.2rem, 2.5vw, 2.5rem));
     color: #1a1a1a;
     pointer-events: none;
-    transform: translate(-50%, -50%);
     text-align: center;
+    top: 10%;
+    left: -15%;
+}
+
+.gs-combo-chip {
+    position: absolute;
+    top: var(--gs-combo-top, 18%);
+    left: var(--gs-combo-left, 2.5%);
+    min-width: 122px;
+    padding: 8px 12px 10px;
+    border: 2px solid rgba(16, 16, 16, 0.82);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    text-align: center;
+    pointer-events: none;
+}
+
+.gs-combo-label {
+    display: block;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: rgba(18, 18, 18, 0.72);
+}
+
+.gs-combo-value {
+    display: block;
+    margin-top: 2px;
+    font-family: 'Permanent Marker', cursive;
+    font-size: var(--gs-combo-fs, clamp(1rem, 2.2vw, 2rem));
+    line-height: 1;
+    color: #111;
 }
 
 /* ─── Top right screen controls ─── */
@@ -194,19 +233,48 @@
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 84px;
-    height: 84px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
-    border: 2px solid #1a1a1a;
-    opacity: 0.42;
+    border: 3px solid #1a1a1a;
+    opacity: 0.66;
     pointer-events: none;
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 0 18px rgba(0, 0, 0, 0.28);
     z-index: 3;
 }
 
+.gs-playfield .lane[data-lane="0"] .lane-receptor {
+    border-color: var(--gs-lane-0);
+    box-shadow: 0 0 14px rgba(255, 45, 85, 0.45);
+}
+
+.gs-playfield .lane[data-lane="1"] .lane-receptor {
+    border-color: var(--gs-lane-1);
+    box-shadow: 0 0 14px rgba(0, 184, 255, 0.46);
+}
+
+.gs-playfield .lane[data-lane="2"] .lane-receptor {
+    border-color: var(--gs-lane-2);
+    box-shadow: 0 0 14px rgba(65, 214, 72, 0.44);
+}
+
+.gs-playfield .lane[data-lane="3"] .lane-receptor {
+    border-color: var(--gs-lane-3);
+    box-shadow: 0 0 14px rgba(255, 154, 26, 0.44);
+}
+
 .gs-playfield .lane.pressed .lane-receptor {
-    opacity: 0.78;
-    box-shadow: 0 0 16px rgba(0, 0, 0, 0.35);
+    opacity: 0.95;
+}
+
+.gs-playfield .lane.penalty .lane-base {
+    background: rgba(0, 0, 0, 0.56) !important;
+}
+
+.gs-playfield .lane.penalty .lane-receptor {
+    opacity: 1;
+    border-color: #111 !important;
+    box-shadow: 0 0 22px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* ─── Hit line — hidden, SVG draws it ─── */
@@ -244,12 +312,63 @@
 .gs-playfield .note {
     width: var(--gs-note-w, 56px);
     height: var(--gs-note-h, 56px);
-    object-fit: contain;
-    background: none !important;
+    border-radius: 50% !important;
     border: none !important;
-    border-radius: 0 !important;
+    background: transparent !important;
     box-shadow: none !important;
+    overflow: hidden;
+}
+
+.gs-playfield .note-sprite {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+    pointer-events: none;
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, var(--gs-note-shadow, 0.22)));
+}
+
+.gs-playfield .note-tint {
+    position: absolute;
+    inset: 1%;
+    border-radius: 50%;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    opacity: 0.62;
+}
+
+.gs-playfield .note[data-lane="0"] {
+    filter: drop-shadow(0 0 16px rgba(255, 45, 85, 0.5));
+}
+
+.gs-playfield .note[data-lane="0"] .note-tint {
+    background: var(--gs-lane-0);
+}
+
+.gs-playfield .note[data-lane="1"] {
+    filter: drop-shadow(0 0 16px rgba(0, 184, 255, 0.5));
+}
+
+.gs-playfield .note[data-lane="1"] .note-tint {
+    background: var(--gs-lane-1);
+}
+
+.gs-playfield .note[data-lane="2"] {
+    filter: drop-shadow(0 0 16px rgba(65, 214, 72, 0.46));
+}
+
+.gs-playfield .note[data-lane="2"] .note-tint {
+    background: var(--gs-lane-2);
+}
+
+.gs-playfield .note[data-lane="3"] {
+    filter: drop-shadow(0 0 16px rgba(255, 154, 26, 0.46));
+}
+
+.gs-playfield .note[data-lane="3"] .note-tint {
+    background: var(--gs-lane-3);
 }
 
 /* ─── Cat paws — anchored at virtual slots 0 / 5 inside the lane grid ─── */
@@ -342,7 +461,8 @@
 /* ─── Pause buttons ─── */
 .gs-pause-actions {
     display: flex;
-    gap: 18px;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .gs-pause-actions .btn {
@@ -366,6 +486,95 @@
 .gs-pause-actions .btn.primary {
     border-color: rgba(0, 0, 0, 0.55);
     background: rgba(255, 255, 255, 0.82);
+}
+
+.gs-setting-panel {
+    width: min(430px, 92vw);
+    border: 3px solid rgba(0, 0, 0, 0.82);
+    border-radius: 14px;
+    background: rgba(250, 250, 250, 0.96);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    padding: 18px;
+    outline: none;
+}
+
+.gs-setting-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.3rem;
+    color: #121212;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.gs-setting-section-title {
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #171717;
+    margin-bottom: 8px;
+}
+
+.gs-setting-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gs-setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.gs-setting-lane {
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #171717;
+}
+
+.gs-setting-key-btn {
+    min-width: 130px;
+    padding: 8px 12px;
+    border: 2px solid rgba(20, 20, 20, 0.72);
+    border-radius: 10px;
+    background: #fff;
+    color: #101010;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.gs-setting-key-btn[data-listening="true"] {
+    border-color: #ff2d55;
+    box-shadow: 0 0 0 3px rgba(255, 45, 85, 0.2);
+}
+
+.gs-setting-hint {
+    margin-top: 10px;
+    color: rgba(20, 20, 20, 0.68);
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.82rem;
+}
+
+.gs-setting-error {
+    min-height: 1.2em;
+    margin-top: 6px;
+    color: #d1123f;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.gs-setting-actions {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 /* ─── Effects override — sketch colours ─── */

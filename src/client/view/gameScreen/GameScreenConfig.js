@@ -44,8 +44,8 @@ const GameScreenConfig = {
 
     /* ── Notes ── */
     note: {
-        widthPx: 56,
-        heightPx: 56,
+        widthPx: 80,
+        heightPx: 80,
         shadowAlpha: 0.22,
     },
 
@@ -60,17 +60,17 @@ const GameScreenConfig = {
         // Nếu chart remap key (ví dụ keymap đảo thứ tự), dùng keyTargets bên dưới
         // để bám theo phím thực tế thay vì lane index.
         laneTargets: [
-            { side: 'left', xOffsetPx: 12 },    // phím 1 (giảm lệch, canh về lane 1)
-            { side: 'left', xOffsetPx: 20 },   // phím 2
-            { side: 'right', xOffsetPx: -20 },  // phím 3
-            { side: 'right', xOffsetPx: 10 },  // phím 4
+            { side: 'left', xOffsetPx: 200 },    // phím 1 (giảm lệch, canh về lane 1)
+            { side: 'left', xOffsetPx: 220 },   // phím 2
+            { side: 'right', xOffsetPx: -220 },  // phím 3
+            { side: 'right', xOffsetPx: -200 },  // phím 4
         ],
         // Ưu tiên theo phím bấm thực tế (data.key). Sửa ở đây để chắc chắn "ăn".
         keyTargets: {
-            '1': { side: 'left', xOffsetPx: 230 },
-            '2': { side: 'left', xOffsetPx: 250 },
-            '3': { side: 'right', xOffsetPx: -250 },
-            '4': { side: 'right', xOffsetPx: -230 },
+            '1': { side: 'left', xOffsetPx: 200 },
+            '2': { side: 'left', xOffsetPx: 220 },
+            '3': { side: 'right', xOffsetPx: -220 },
+            '4': { side: 'right', xOffsetPx: -200 },
         },
         moveDurationMs: 100,
         slamUpPx: 14,
@@ -87,6 +87,7 @@ const GameScreenConfig = {
         scoreTopPct: 50,     // Position of the text inside the board
         scoreLeftPct: 50,    // Position of the text inside the board
         scoreFontSizeClamp: [1.2, 2.5, 2.5],
+
     },
 
     /* ── Judgement text (GOOD / MISS / PERFECT) ── */

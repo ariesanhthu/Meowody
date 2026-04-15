@@ -217,6 +217,111 @@
     line-height: 1.4;
 }
 
+.start-setting-modal {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(2px);
+}
+
+.start-setting-modal[hidden] {
+    display: none;
+}
+
+.start-setting-panel {
+    width: min(440px, 90vw);
+    border: 3px solid rgba(20, 20, 20, 0.9);
+    border-radius: 14px;
+    background: rgba(245, 245, 245, 0.96);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+    padding: 20px 20px 16px;
+}
+
+.start-setting-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.4rem;
+    color: #111;
+    margin: 0 0 14px;
+    text-align: center;
+}
+
+.start-setting-section-title {
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(17, 17, 17, 0.9);
+    margin-bottom: 8px;
+}
+
+.start-keybind-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.start-keybind-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.start-keybind-label {
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.95rem;
+    color: #1b1b1b;
+    font-weight: 700;
+}
+
+.start-keybind-btn {
+    min-width: 130px;
+    padding: 8px 14px;
+    border: 2px solid rgba(17, 17, 17, 0.72);
+    border-radius: 10px;
+    background: #fff;
+    color: #111;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.start-keybind-btn[data-listening="true"] {
+    border-color: #ff2d55;
+    box-shadow: 0 0 0 3px rgba(255, 45, 85, 0.2);
+}
+
+.start-setting-hint {
+    margin-top: 10px;
+    color: rgba(20, 20, 20, 0.68);
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.82rem;
+}
+
+.start-setting-error {
+    min-height: 1.2em;
+    margin-top: 6px;
+    color: #d1123f;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.start-setting-actions {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 /* @media (max-width: 900px) {
     .start-logo {
         width: clamp(250px, 70vw, 620px);

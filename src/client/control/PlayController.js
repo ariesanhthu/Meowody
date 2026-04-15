@@ -314,7 +314,23 @@ export class PlayController {
         if (this._state.scene !== 'playing') return;
         const t = this._clock.getCurrentTimeMs();
         const jr = this._engine.handleLaneInput(laneIndex, t);
-        if (!jr) return;
+        if (!jr) {
+            const penalty = this._engine.applyWrongInputPenalty(laneIndex, t);
+            if (penalty) {
+                this._bus.emit('INPUT_WRONG_LANE', {
+                    laneIndex,
+                    combo: this._state.combo,
+                    currentTimeMs: t,
+                });
+                this._bus.emit('NOTE_MISSED', {
+                    noteId: penalty.noteId,
+                    laneIndex,
+                    currentTimeMs: t,
+                    reason: 'wrong-input',
+                });
+            }
+            return;
+        }
         this._bus.emit('NOTE_HIT', {
             noteId: jr.noteId,
             laneIndex: jr.laneIndex,

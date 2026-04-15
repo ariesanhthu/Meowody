@@ -3,7 +3,7 @@
 const NOTE_SRC = 'assets/game_screen/note.png';
 
 /**
- * Renders note sprites as <img> elements. Position driven by render snapshot only.
+ * Renders original note sprite with a per-lane tint overlay.
  */
 export class NoteView {
     constructor() {
@@ -28,7 +28,7 @@ export class NoteView {
     }
 
     /**
-     * Draw visible notes for this frame using <img> elements.
+     * Draw visible notes for this frame.
      *
      * Args:
      *   notes (RenderNote[]): Visible notes from snapshot.
@@ -47,16 +47,25 @@ export class NoteView {
         const laneWidthPct = 100 / laneCount;
 
         for (const n of notes) {
-            const img = document.createElement('img');
-            img.className = 'note';
-            img.src = NOTE_SRC;
-            img.alt = '';
-            img.draggable = false;
-            img.dataset.id = n.id;
-            img.dataset.lane = String(n.laneIndex);
-            img.style.top = `${n.y}px`;
-            img.style.left = `${laneWidthPct * n.laneIndex + laneWidthPct / 2}%`;
-            frag.appendChild(img);
+            const note = document.createElement('div');
+            note.className = 'note';
+            note.dataset.id = n.id;
+            note.dataset.lane = String(n.laneIndex);
+            note.style.top = `${n.y}px`;
+            note.style.left = `${laneWidthPct * n.laneIndex + laneWidthPct / 2}%`;
+
+            const sprite = document.createElement('img');
+            sprite.className = 'note-sprite';
+            sprite.src = NOTE_SRC;
+            sprite.alt = '';
+            sprite.draggable = false;
+
+            const tint = document.createElement('span');
+            tint.className = 'note-tint';
+
+            note.appendChild(sprite);
+            note.appendChild(tint);
+            frag.appendChild(note);
         }
         this._layer.appendChild(frag);
     }

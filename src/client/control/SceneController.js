@@ -5,6 +5,9 @@ import { PlayController } from './PlayController.js';
 import { InputController } from './InputController.js';
 import { GameView } from '../view/GameView.js';
 
+const SETTINGS_STORAGE_KEY = 'meowody_settings_v1';
+const DEFAULT_KEYMAP = ['1', '2', '3', '4'];
+
 /**
  * Manages scene transitions and wires visual effects from gameplay events.
  */
@@ -31,9 +34,16 @@ export class SceneController {
         /** @type {object[]} */
         this._songs = [];
 
+        this._settings = {
+            keymap: [...DEFAULT_KEYMAP],
+        };
+        this._selectedSong = null;
+
         this._laneView = null;
         this._effectView = null;
         this._screenEffectView = null;
+
+        this._loadSettings();
     }
 
     /**
@@ -132,6 +142,8 @@ export class SceneController {
         this._gameView.mount(host);
         await this._gameView.loadAssets();
 
+        this._input.setPointerTarget(host.querySelector('.gs-lane-grid'));
+
         const { laneView, effectView, screenEffectView, gameScreenView } = this._gameView.getSubViews();
         this._laneView = laneView;
         this._effectView = effectView;
@@ -195,6 +207,12 @@ export class SceneController {
             }
         });
 
+        this._bus.on('INPUT_WRONG_LANE', (data) => {
+            if (this._laneView) {
+                this._laneView.flashPenalty(data.laneIndex, 150);
+            }
+        });
+
         this._bus.on('GAME_FINISHED', () => {
             this._input.unbind();
             this.goTo('result');
@@ -241,7 +259,11 @@ export class SceneController {
         this._gameView.showStartScreen({
             songCount: this._songs.length,
             onStart: () => this.goTo('menu'),
-            onSettings: () => this.goTo('menu'),
+            keymap: this._settings.keymap,
+            onSaveSettings: (keymap) => {
+                this._updateSettings({ keymap });
+                this._input.setKeymap(this._settings.keymap);
+            },
         });
     }
 
@@ -263,19 +285,29 @@ export class SceneController {
 
         try {
             const details = await this._play.selectSong(songId);
+            this._selectedSong = details;
             if (details.availableCharts && details.availableCharts.length > 0) {
                 this._setShellMode('menu');
-                this._gameView.showChartOptions(details.availableCharts);
+                this._gameView.showChartOptions(details.availableCharts, {
+                    onBack: () => this.goTo('menu'),
+                });
                 this._statusEl.textContent = `${details.title} — choose difficulty`;
                 this._currentScene = 'menu';
 
                 const opts = this._container.querySelector('.chart-options');
                 if (opts) {
-                    opts.addEventListener('click', (e) => {
-                        const btn = e.target.closest('[data-chart-id]');
+                    opts.onclick = (e) => {
+                        const btn = e.target instanceof Element
+                            ? e.target.closest('[data-chart-id]')
+                            : null;
                         if (!btn) return;
                         this._onSelectChart(btn.dataset.chartId);
-                    });
+                    };
+                }
+
+                const backBtn = this._container.querySelector('#chart-back-btn');
+                if (backBtn) {
+                    backBtn.onclick = () => this.goTo('menu');
                 }
             }
         } catch (err) {
@@ -290,7 +322,7 @@ export class SceneController {
 
         try {
             await this._play.load(chartId);
-            this._input.setKeymap(this._play.getKeymap());
+            this._input.setKeymap(this._settings.keymap);
             this._statusEl.textContent = 'Ready';
             this._currentScene = 'ready';
             this._setShellMode('ready');
@@ -326,6 +358,7 @@ export class SceneController {
         this._currentScene = 'paused';
         this._input.unbind();
         if (this._gameScreenView) this._gameScreenView.setPaused(true);
+        this._showPauseMenu();
     }
 
     /** @private */
@@ -334,7 +367,80 @@ export class SceneController {
         this._currentScene = 'playing';
         this._setShellMode('playing');
         this._input.bind();
+        this._gameView.hidePause();
         if (this._gameScreenView) this._gameScreenView.setPaused(false);
+    }
+
+    /** @private */
+    _showPauseMenu() {
+        this._gameView.showPause({
+            onResume: () => this._onResume(),
+            onSetting: () => this._showPauseSettings(),
+            onExitGame: () => {
+                this._play.stopPlayback();
+                this._gameView.hidePause();
+                this.goTo('menu');
+            },
+        });
+    }
+
+    /** @private */
+    _showPauseSettings() {
+        this._gameView.showSettingsPanel({
+            keymap: this._settings.keymap,
+            onBack: () => this._showPauseMenu(),
+            onSave: (keymap) => {
+                this._updateSettings({ keymap });
+                this._input.setKeymap(this._settings.keymap);
+                this._showPauseMenu();
+            },
+        });
+    }
+
+    /** @private */
+    _loadSettings() {
+        try {
+            const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            this._settings.keymap = this._normalizeKeymap(parsed?.keymap);
+        } catch {
+            this._settings.keymap = [...DEFAULT_KEYMAP];
+        }
+    }
+
+    /** @private */
+    _updateSettings(next) {
+        this._settings = {
+            ...this._settings,
+            ...next,
+            keymap: this._normalizeKeymap(next?.keymap || this._settings.keymap),
+        };
+
+        try {
+            localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(this._settings));
+        } catch {
+            // Ignore storage failures in private mode.
+        }
+    }
+
+    /** @private */
+    _normalizeKeymap(keymap) {
+        if (!Array.isArray(keymap) || keymap.length !== DEFAULT_KEYMAP.length) {
+            return [...DEFAULT_KEYMAP];
+        }
+
+        const normalized = keymap.map((k, idx) => {
+            const raw = String(k || '').trim();
+            if (!raw) return DEFAULT_KEYMAP[idx];
+            return raw.length === 1 ? raw.toUpperCase() : raw;
+        });
+
+        const lowered = normalized.map((k) => k.toLowerCase());
+        if (new Set(lowered).size !== normalized.length) {
+            return [...DEFAULT_KEYMAP];
+        }
+        return normalized;
     }
 
     /** @private */

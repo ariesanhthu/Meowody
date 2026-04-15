@@ -123,6 +123,34 @@ export class GameEngine {
     }
 
     /**
+     * Apply penalty when player presses a lane with no hittable note.
+     *
+     * Args:
+     *   laneIndex (number): Pressed lane.
+     *   currentTimeMs (number): Audio time at press.
+     *
+     * Returns:
+     *   JudgementResult | null
+     */
+    applyWrongInputPenalty(laneIndex, currentTimeMs) {
+        if (!this._state) return null;
+
+        /** @type {JudgementResult} */
+        const jr = {
+            judgement: 'miss',
+            deltaMs: 0,
+            noteId: `wrong-${laneIndex}-${Math.round(currentTimeMs)}`,
+            laneIndex,
+            awardedScore: 0,
+            comboAfterHit: 0,
+        };
+
+        ScoreSystem.applyJudgement(this._state, jr);
+        jr.comboAfterHit = this._state.combo;
+        return jr;
+    }
+
+    /**
      * Build a render snapshot for the view layer.
      *
      * Args:

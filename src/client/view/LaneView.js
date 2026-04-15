@@ -18,6 +18,7 @@ export class LaneView {
         /** @type {HTMLElement[]} */
         this._lanes = [];
         this._pressTimers = {};
+        this._penaltyTimers = {};
         this._waveAnimations = {};
     }
 
@@ -79,6 +80,23 @@ export class LaneView {
         clearTimeout(this._pressTimers[laneIndex]);
         this._pressTimers[laneIndex] = setTimeout(() => {
             lane.classList.remove('pressed');
+        }, durationMs);
+    }
+
+    /**
+     * Flash lane with penalty state (black blink).
+     *
+     * Args:
+     *   laneIndex (number): Lane to flash as penalty.
+     *   durationMs (number): Flash duration.
+     */
+    flashPenalty(laneIndex, durationMs = 150) {
+        const lane = this._lanes[laneIndex];
+        if (!lane) return;
+        lane.classList.add('penalty');
+        clearTimeout(this._penaltyTimers[laneIndex]);
+        this._penaltyTimers[laneIndex] = setTimeout(() => {
+            lane.classList.remove('penalty');
         }, durationMs);
     }
 

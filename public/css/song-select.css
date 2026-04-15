@@ -110,6 +110,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.2s ease;
 }
 
 .select-disk-img {
@@ -123,6 +124,10 @@
 
 .select-disk-slot:hover .select-disk-img {
     filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.45));
+}
+
+.select-disk-slot:hover .select-disk-wrap {
+    transform: scale(1.12);
 }
 
 /* ─── Disk info text ─── */
