@@ -774,17 +774,40 @@ body.show-intro #intro-screen {
 /* ─── Buttons ─── */
 .btn {
     padding: 10px 22px;
-    border-radius: 8px;
-    border: 1px solid var(--border-glow);
-    background: var(--bg-panel);
-    color: var(--text-primary);
+    position: relative;
+    isolation: isolate;
+    border-radius: 10px;
+    border: 0;
+    background: #f5f3ef;
+    color: #111;
     cursor: pointer;
     font-family: var(--font-display);
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
-    transition: all 0.15s;
+    transition: transform 0.15s ease, filter 0.15s ease;
+    box-shadow: 0 0 0 9px #111;
+}
+
+.btn::before,
+.btn::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.btn::before {
+    box-shadow: 0 0 0 7px rgba(0, 0, 0, 0.45);
+    transform: translate(1px, -1px);
+}
+
+.btn::after {
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0.2);
+    transform: translate(-1px, 1px);
 }
 
 .btn:disabled {
@@ -793,16 +816,13 @@ body.show-intro #intro-screen {
 }
 
 .btn.primary {
-    border-color: var(--accent);
-    color: var(--accent);
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.1);
+    color: #000;
+    filter: saturate(1.05);
 }
 
 .btn:not(:disabled):hover {
-    border-color: var(--accent);
-    background: rgba(0, 229, 255, 0.06);
-    box-shadow: 0 0 16px rgba(0, 229, 255, 0.12);
-    transform: translateY(-1px);
+    transform: translateY(-1px) rotate(-1.2deg);
+    filter: brightness(0.98);
 }
 
 /* ─── Pause overlay ─── */
