@@ -108,13 +108,30 @@ const GameScreenConfig = {
 
     /* ── Judgement text (GOOD / MISS / PERFECT) ── */
     judgement: {
-        baseOffsetYFromHitPx: 10,  // tăng giá trị để chữ hiện cao hơn
+        // Khoang cach (px) tinh tu hit-line den vi tri text judgement ban dau.
+        // Gia tri lon hon -> text xuat hien cao hon.
+        baseOffsetYFromHitPx: 10,
+
+        // Dich ngang theo tung lane [lane0, lane1, lane2, lane3] (don vi px).
+        // Dung de can vi tri text khi UI lane/aset bi lech.
         offsetXPerLanePx: [0, 0, 0, 0],
+
+        // Do cao text PERFECT/GREAT/GOOD bay len (px).
         perfectRisePx: 38,
+
+        // Do sau text MISS roi xuong (px).
         missDropPx: 12,
+
+        // Scale bat dau cua text PERFECT/GREAT/GOOD truoc khi ve 1.0.
         perfectScaleFrom: 1.28,
+
+        // Scale bat dau cua text MISS truoc khi ve 1.0.
         missScaleFrom: 0.9,
+
+        // Tong thoi gian animation cho PERFECT/GREAT/GOOD (ms).
         perfectDurationMs: 460,
+
+        // Tong thoi gian animation cho MISS (ms).
         missDurationMs: 520,
     },
 
