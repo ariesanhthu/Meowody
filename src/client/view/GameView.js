@@ -315,14 +315,14 @@ export class GameView {
         const tick = () => {
             if (count > 0) {
                 if (cVal) cVal.textContent = String(count);
-                if (window.anime) {
-                    window.anime.remove(cVal);
-                    window.anime({
-                        targets: cVal,
+                if (globalThis.anime) {
+                    const { animate, remove } = globalThis.anime;
+                    remove(cVal);
+                    animate(cVal, {
                         scale: [0.5, 1.2, 1],
                         opacity: [0, 1, 0.8],
                         duration: 800,
-                        easing: 'easeOutElastic(1, .5)'
+                        ease: 'outElastic(1, .5)',
                     });
                 }
                 count--;

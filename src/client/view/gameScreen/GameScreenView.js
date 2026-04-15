@@ -317,8 +317,9 @@ export class GameScreenView {
      *   void
      */
     animatePaw(laneIndex, laneCount, keyPressed) {
-        const animeApi = window.anime;
+        const animeApi = globalThis.anime;
         if (!animeApi || !this._wrap) return;
+        const { animate, createTimeline, remove } = animeApi;
         if (this._comboPoseActive) return;
 
         const keyTargetCfg = (keyPressed && CFG.paw.keyTargets)
@@ -335,7 +336,7 @@ export class GameScreenView {
         const laneEl = this._wrap.querySelector(`.lane[data-lane="${laneIndex}"]`);
         if (!laneEl) return;
 
-        animeApi.remove(paw);
+        remove(paw);
         if (state.returnTimer) {
             clearTimeout(state.returnTimer);
             state.returnTimer = null;
@@ -349,42 +350,41 @@ export class GameScreenView {
 
         const { moveDurationMs, slamUpPx, slamScale, idleBeforeReturnMs, returnDurationMs } = CFG.paw;
 
-        animeApi.timeline({ targets: paw, easing: 'easeOutQuad' })
-            .add({
-                translateX: dx,
-                translateY: 0,
+        createTimeline({ ease: 'outQuad' })
+            .add(paw, {
+                x: dx,
+                y: 0,
                 scale: 1,
                 rotate: 0,
                 duration: moveDurationMs,
             })
-            .add({
-                translateY: -slamUpPx,
+            .add(paw, {
+                y: -slamUpPx,
                 scale: slamScale,
                 rotate: isLeft ? 5 : -5,
                 duration: 55,
             })
-            .add({
-                translateY: 0,
+            .add(paw, {
+                y: 0,
                 scale: 1,
                 rotate: 0,
                 duration: 70,
-                easing: 'easeOutBack',
+                ease: 'outBack',
             });
 
         const totalSlamMs = moveDurationMs + 55 + 70;
         state.targetDx = dx;
         state.currentDx = dx;
         state.returnTimer = setTimeout(() => {
-            animeApi.remove(paw);
-            animeApi({
-                targets: paw,
-                translateX: 0,
-                translateY: 0,
+            remove(paw);
+            animate(paw, {
+                x: 0,
+                y: 0,
                 scale: 1,
                 rotate: 0,
                 duration: returnDurationMs,
-                easing: 'easeInOutQuad',
-                complete: () => {
+                ease: 'inOutQuad',
+                onComplete: () => {
                     state.currentDx = 0;
                 },
             });
@@ -482,8 +482,9 @@ export class GameScreenView {
     }
 
     _returnPawHome(side) {
-        const animeApi = window.anime;
+        const animeApi = globalThis.anime;
         if (!animeApi || !this._wrap) return;
+        const { animate, remove } = animeApi;
 
         const paw = side === 'left' ? this._pawLeft : this._pawRight;
         const state = side === 'left' ? this._pawState.left : this._pawState.right;
@@ -494,16 +495,15 @@ export class GameScreenView {
             state.returnTimer = null;
         }
 
-        animeApi.remove(paw);
-        animeApi({
-            targets: paw,
-            translateX: 0,
-            translateY: 0,
+        remove(paw);
+        animate(paw, {
+            x: 0,
+            y: 0,
             scale: 1,
             rotate: 0,
             duration: CFG.paw.returnDurationMs,
-            easing: 'easeInOutQuad',
-            complete: () => {
+            ease: 'inOutQuad',
+            onComplete: () => {
                 state.currentDx = 0;
             },
         });
@@ -511,8 +511,9 @@ export class GameScreenView {
     }
 
     _movePawToLane(side, laneIndex, laneCount) {
-        const animeApi = window.anime;
+        const animeApi = globalThis.anime;
         if (!animeApi || !this._wrap) return;
+        const { animate, remove } = animeApi;
 
         const paw = side === 'left' ? this._pawLeft : this._pawRight;
         const state = side === 'left' ? this._pawState.left : this._pawState.right;
@@ -526,7 +527,7 @@ export class GameScreenView {
             state.returnTimer = null;
         }
 
-        animeApi.remove(paw);
+        remove(paw);
 
         const targetCfg = CFG.paw.laneTargets?.[laneIndex] || null;
         const defaultSide = laneIndex < laneCount / 2 ? 'left' : 'right';
@@ -542,15 +543,14 @@ export class GameScreenView {
 
         state.targetDx = dx;
 
-        animeApi({
-            targets: paw,
-            translateX: dx,
-            translateY: 0,
+        animate(paw, {
+            x: dx,
+            y: 0,
             scale: 1,
             rotate: 0,
             duration: CFG.paw.moveDurationMs,
-            easing: 'easeOutQuad',
-            complete: () => {
+            ease: 'outQuad',
+            onComplete: () => {
                 state.currentDx = dx;
             },
         });
@@ -732,7 +732,7 @@ nearestToHit: ${nearestLabel}`;
      *   None
      */
     destroy() {
-        const animeApi = window.anime;
+        const animeApi = globalThis.anime;
         if (animeApi && this._wrap) {
             animeApi.remove(this._pawLeft);
             animeApi.remove(this._pawRight);

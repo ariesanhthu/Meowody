@@ -115,8 +115,9 @@ export class LaneView {
      */
     playJudgementEffect(laneIndex, judgement) {
         const lane = this._lanes[laneIndex];
-        const animeApi = window.anime;
+        const animeApi = globalThis.anime;
         if (!lane || !animeApi) return;
+        const { animate, remove } = animeApi;
 
         const waveEl = lane.querySelector('.lane-wave');
         if (!waveEl) return;
@@ -142,22 +143,21 @@ export class LaneView {
             this._waveAnimations[laneIndex].pause();
         }
 
-        animeApi.remove(waveEl);
+        remove(waveEl);
 
         waveEl.style.opacity = '0';
         waveEl.style.transform = 'translateY(100%) scaleY(0.9)';
 
-        this._waveAnimations[laneIndex] = animeApi({
-            targets: waveEl,
-            translateY: ['100%', '-8%'],
+        this._waveAnimations[laneIndex] = animate(waveEl, {
+            y: ['100%', '-8%'],
             scaleY: [0.9, profile.scalePeak, 1.0],
             opacity: [
-                { value: profile.peakOpacity, duration: 90, easing: 'easeOutQuad' },
-                { value: profile.midOpacity, duration: 180, easing: 'linear' },
-                { value: 0.0, duration: 220, easing: 'easeInQuad' },
+                { to: profile.peakOpacity, duration: 90, ease: 'outQuad' },
+                { to: profile.midOpacity, duration: 180, ease: 'linear' },
+                { to: 0.0, duration: 220, ease: 'inQuad' },
             ],
             duration: profile.durationMs,
-            easing: 'easeOutCubic',
+            ease: 'outCubic',
         });
     }
 

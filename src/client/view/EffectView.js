@@ -53,7 +53,8 @@ export class EffectView {
      *   None
      */
     spawnJudgement(laneIndex, judgement, laneCount = 4) {
-        if (!this._layer || typeof anime === 'undefined') return;
+        if (!this._layer || !globalThis.anime) return;
+        const { animate } = globalThis.anime;
         const jCfg = CFG.judgement || {};
 
         const el = document.createElement('div');
@@ -75,10 +76,9 @@ export class EffectView {
 
         const isMiss = judgement === 'miss';
 
-        anime({
-            targets: el,
+        animate(el, {
             opacity: [0, 1, 1, 0],
-            translateY: isMiss
+            y: isMiss
                 ? [0, jCfg.missDropPx ?? 10]
                 : [0, -(jCfg.perfectRisePx ?? 28)],
             scale: isMiss
@@ -87,8 +87,8 @@ export class EffectView {
             duration: isMiss
                 ? (jCfg.missDurationMs ?? 500)
                 : (jCfg.perfectDurationMs ?? 450),
-            easing: 'easeOutCubic',
-            complete: () => el.remove(),
+            ease: 'outCubic',
+            onComplete: () => el.remove(),
         });
     }
 
@@ -106,7 +106,8 @@ export class EffectView {
      *   None
      */
     flashLane(laneIndex, laneCount = 4) {
-        if (!this._layer || typeof anime === 'undefined') return;
+        if (!this._layer || !globalThis.anime) return;
+        const { animate } = globalThis.anime;
 
         const el = document.createElement('div');
         el.className = 'lane-flash';
@@ -118,12 +119,11 @@ export class EffectView {
 
         this._layer.appendChild(el);
 
-        anime({
-            targets: el,
+        animate(el, {
             opacity: [0.6, 0],
             duration: 200,
-            easing: 'easeOutQuad',
-            complete: () => el.remove(),
+            ease: 'outQuad',
+            onComplete: () => el.remove(),
         });
     }
 
@@ -140,25 +140,24 @@ export class EffectView {
      *   None
      */
     animateResultEntrance(panelEl) {
-        if (typeof anime === 'undefined') return;
+        if (!globalThis.anime) return;
+        const { animate, stagger } = globalThis.anime;
 
         const children = panelEl.children;
-        anime({
-            targets: panelEl,
+        animate(panelEl, {
             opacity: [0, 1],
             scale: [0.92, 1],
             duration: 500,
-            easing: 'easeOutCubic',
+            ease: 'outCubic',
         });
 
         if (children.length > 0) {
-            anime({
-                targets: Array.from(children),
+            animate(Array.from(children), {
                 opacity: [0, 1],
-                translateY: [20, 0],
-                delay: anime.stagger(80, { start: 200 }),
+                y: [20, 0],
+                delay: stagger(80, { start: 200 }),
                 duration: 400,
-                easing: 'easeOutCubic',
+                ease: 'outCubic',
             });
         }
     }

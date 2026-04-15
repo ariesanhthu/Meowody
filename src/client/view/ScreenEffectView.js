@@ -51,8 +51,9 @@ export class ScreenEffectView {
      *   void
      */
     playPerfectEffect() {
-        const animeApi = window.anime;
+        const animeApi = globalThis.anime;
         if (!animeApi || !this._overlayEl || !this._rainbowEl || !this._rainbow2El || !this._pulseEl) return;
+        const { createTimeline, remove } = animeApi;
         const now = performance.now();
         if (now - this._lastPerfectAt < 90) return;
         if (now - this._lastPerfectAt > 1100) this._perfectChain = 0;
@@ -68,47 +69,43 @@ export class ScreenEffectView {
 
         if (this._timeline) this._timeline.pause();
 
-        animeApi.remove([this._overlayEl, this._rainbowEl, this._rainbow2El, this._pulseEl]);
+        remove([this._overlayEl, this._rainbowEl, this._rainbow2El, this._pulseEl]);
         this._primeEffectState();
 
-        this._timeline = animeApi.timeline({ easing: 'easeOutCubic' })
-            .add({
-                targets: this._overlayEl,
+        this._timeline = createTimeline({ ease: 'outCubic' })
+            .add(this._overlayEl, {
                 opacity: [
-                    { value: overlayPeak, duration: 110 * speedFactor, easing: 'linear' },
-                    { value: overlayPeak * 0.92, duration: 330 * speedFactor, easing: 'linear' },
-                    { value: 0, duration: 320 * speedFactor, easing: 'easeInQuad' },
+                    { to: overlayPeak, duration: 110 * speedFactor, ease: 'linear' },
+                    { to: overlayPeak * 0.92, duration: 330 * speedFactor, ease: 'linear' },
+                    { to: 0, duration: 320 * speedFactor, ease: 'inQuad' },
                 ],
             }, 0)
-            .add({
-                targets: this._pulseEl,
+            .add(this._pulseEl, {
                 opacity: [
-                    { value: pulsePeak, duration: 120 * speedFactor, easing: 'easeOutQuad' },
-                    { value: 0, duration: 340 * speedFactor, easing: 'easeInQuad' },
+                    { to: pulsePeak, duration: 120 * speedFactor, ease: 'outQuad' },
+                    { to: 0, duration: 340 * speedFactor, ease: 'inQuad' },
                 ],
                 scale: [0.2, 5.1 + chainBoost * 1.2],
                 duration: 460 * speedFactor,
-                easing: 'easeOutCubic',
+                ease: 'outCubic',
             }, 0)
-            .add({
-                targets: this._rainbowEl,
+            .add(this._rainbowEl, {
                 opacity: [
-                    { value: rainbowPeak, duration: 130 * speedFactor, easing: 'easeOutQuad' },
-                    { value: rainbowPeak * 0.58, duration: 260 * speedFactor, easing: 'linear' },
-                    { value: 0, duration: 340 * speedFactor, easing: 'easeInQuad' },
+                    { to: rainbowPeak, duration: 130 * speedFactor, ease: 'outQuad' },
+                    { to: rainbowPeak * 0.58, duration: 260 * speedFactor, ease: 'linear' },
+                    { to: 0, duration: 340 * speedFactor, ease: 'inQuad' },
                 ],
                 scale: [
-                    { value: 1.01 + chainBoost * 0.12, duration: 300 * speedFactor, easing: 'easeOutCubic' },
-                    { value: 1.09 + chainBoost * 0.13, duration: 430 * speedFactor, easing: 'easeOutQuad' },
+                    { to: 1.01 + chainBoost * 0.12, duration: 300 * speedFactor, ease: 'outCubic' },
+                    { to: 1.09 + chainBoost * 0.13, duration: 430 * speedFactor, ease: 'outQuad' },
                 ],
                 duration: 730 * speedFactor,
             }, 0)
-            .add({
-                targets: this._rainbow2El,
+            .add(this._rainbow2El, {
                 opacity: [
-                    { value: rainbow2Peak, duration: 150 * speedFactor, easing: 'easeOutQuad' },
-                    { value: rainbow2Peak * 0.52, duration: 220 * speedFactor, easing: 'linear' },
-                    { value: 0, duration: 320 * speedFactor, easing: 'easeInQuad' },
+                    { to: rainbow2Peak, duration: 150 * speedFactor, ease: 'outQuad' },
+                    { to: rainbow2Peak * 0.52, duration: 220 * speedFactor, ease: 'linear' },
+                    { to: 0, duration: 320 * speedFactor, ease: 'inQuad' },
                 ],
                 scale: [0.9, 1.06 + chainBoost * 0.22],
                 rotate: [0, 8 + chainBoost * 14],
@@ -132,7 +129,7 @@ export class ScreenEffectView {
             this._timeline.pause();
             this._timeline = null;
         }
-        const animeApi = window.anime;
+        const animeApi = globalThis.anime;
         if (animeApi && this._overlayEl && this._rainbowEl && this._rainbow2El && this._pulseEl) {
             animeApi.remove([this._overlayEl, this._rainbowEl, this._rainbow2El, this._pulseEl]);
         }

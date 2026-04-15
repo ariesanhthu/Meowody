@@ -7,7 +7,7 @@ const DISKS_PER_PAGE = 3;
 
 /**
  * Renders the paw-themed song selection screen with spinning vinyl disks.
- */
+*/
 export class SelectScreenView {
     constructor() {
         /** @type {HTMLElement|null} */
@@ -61,7 +61,9 @@ export class SelectScreenView {
 
         this._root = this._host.querySelector('.select-screen');
         this._wireEvents();
-        this._playEntrance();
+        // TODO: Play entrance animation
+        this._updateArrowState();
+        this._spinDisks();
     }
 
     /**
@@ -146,13 +148,13 @@ export class SelectScreenView {
 
     /** @private */
     _onDiskSelect(slotEl) {
-        const anime = window.anime;
-        if (anime) {
-            anime({
-                targets: slotEl.querySelector('.select-disk-img'),
+        const animeApi = globalThis.anime;
+        if (animeApi) {
+            const { animate } = animeApi;
+            animate(slotEl.querySelector('.select-disk-img'), {
                 scale: [1, 1.15, 1],
                 duration: 300,
-                easing: 'easeInOutSine',
+                ease: 'inOutSine',
             });
         }
 
@@ -200,77 +202,34 @@ export class SelectScreenView {
     }
 
     /** @private */
-    _playEntrance() {
-        const anime = window.anime;
-        if (!anime || !this._root) return;
-
-        const frame = this._root.querySelector('.select-frame');
-        const title = this._root.querySelector('.select-title');
-        const slots = this._root.querySelectorAll('.select-disk-slot');
-        const nav = this._root.querySelector('.select-nav');
-        const backBtn = this._root.querySelector('.select-back-btn');
-
-        const tl = anime.timeline({ easing: 'easeOutCubic' });
-
-        tl.add({
-            targets: frame,
-            opacity: [0, 1],
-            translateY: [50, 0],
-            duration: 600,
-        })
-        .add({
-            targets: title,
-            opacity: [0, 1],
-            translateY: [-10, 0],
-            duration: 400,
-        }, '-=300')
-        .add({
-            targets: slots,
-            opacity: [0, 1],
-            scale: [0.6, 1],
-            delay: anime.stagger(100),
-            duration: 450,
-        }, '-=200')
-        .add({
-            targets: [nav, backBtn],
-            opacity: [0, 1],
-            duration: 300,
-        }, '-=200');
-
-        this._animations.push(tl);
-        this._updateArrowState();
-        this._spinDisks();
-    }
-
-    /** @private */
     _animateDisksEntrance() {
-        const anime = window.anime;
-        if (!anime || !this._root) return;
+        const animeApi = globalThis.anime;
+        if (!animeApi || !this._root) return;
+        const { animate, stagger } = animeApi;
 
         const slots = this._root.querySelectorAll('.select-disk-slot');
-        const anim = anime({
-            targets: slots,
+        const anim = animate(slots, {
             opacity: [0, 1],
             scale: [0.6, 1],
-            delay: anime.stagger(80),
+            delay: stagger(80),
             duration: 400,
-            easing: 'easeOutCubic',
+            ease: 'outCubic',
         });
         this._animations.push(anim);
     }
 
     /** @private */
     _spinDisks() {
-        const anime = window.anime;
-        if (!anime || !this._root) return;
+        const animeApi = globalThis.anime;
+        if (!animeApi || !this._root) return;
+        const { animate } = animeApi;
 
         const disks = this._root.querySelectorAll('.select-disk-img');
         disks.forEach((disk, i) => {
-            const anim = anime({
-                targets: disk,
+            const anim = animate(disk, {
                 rotate: '1turn',
                 duration: 4000 + i * 600,
-                easing: 'linear',
+                ease: 'linear',
                 loop: true,
             });
             this._animations.push(anim);
@@ -279,9 +238,9 @@ export class SelectScreenView {
 
     /** @private */
     _stopDiskAnimations() {
-        const anime = window.anime;
-        if (anime && this._root) {
-            anime.remove(this._root.querySelectorAll('.select-disk-img, .select-disk-slot'));
+        const animeApi = globalThis.anime;
+        if (animeApi && this._root) {
+            animeApi.remove(this._root.querySelectorAll('.select-disk-img, .select-disk-slot'));
         }
         this._animations = this._animations.filter((a) => {
             if (!a || !a.animatables) return true;
@@ -301,9 +260,9 @@ export class SelectScreenView {
         });
         this._animations = [];
 
-        const anime = window.anime;
-        if (anime && this._root) {
-            anime.remove(this._root.querySelectorAll('*'));
+        const animeApi = globalThis.anime;
+        if (animeApi && this._root) {
+            animeApi.remove(this._root.querySelectorAll('*'));
         }
     }
 }

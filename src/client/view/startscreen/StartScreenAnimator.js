@@ -1,4 +1,6 @@
-const animeApi = typeof window !== 'undefined' ? window.anime : null;
+function getAnimeApi() {
+    return typeof globalThis !== 'undefined' ? globalThis.anime : null;
+}
 
 function _readAngleDeg(value, fallback = 9) {
     const amount = Number.parseFloat(String(value || '').trim());
@@ -16,10 +18,20 @@ export class StartScreenAnimator {
         this._root = root;
         this._animations = [];
         this._isExiting = false;
+        this._started = false;
     }
 
     start() {
+        const animeApi = getAnimeApi();
         if (!animeApi || !this._root) return;
+
+        // Quan trọng: chặn start chồng lên start cũ
+        if (this._started) return;
+
+        // Nếu có animation rác từ vòng trước thì dọn sạch
+        this.stop(false);
+
+        const { animate, createTimeline, stagger, remove } = animeApi;
 
         const logo = this._root.querySelector('.start-logo');
         const catWrap = this._root.querySelector('.start-cat-wrap');
@@ -30,63 +42,36 @@ export class StartScreenAnimator {
         const setting = this._root.querySelector('.start-btn-setting');
         const play = this._root.querySelector('.start-btn-play');
         const ring = this._root.querySelector('.start-btn-ring');
-        const cat_right = this._root.querySelector('.start-cat-right');
+        const catRight = this._root.querySelector('.start-cat-right');
         const particles = this._root.querySelectorAll('.start-particle');
 
-        const intro = animeApi.timeline({ easing: 'easeOutCubic', duration: 700 });
-        intro
-            .add({
-                targets: [catWrap, logo],
-                opacity: [0, 1],
-                translateY: [32, 0],
-                delay: animeApi.stagger(120),
-            })
-            .add(
-                {
-                    targets: [actions, meta],
-                    opacity: [0, 1],
-                    translateY: [20, 0],
-                    duration: 440,
-                },
-                '-=300',
-            )
-            .add(
-                {
-                    targets: particles,
-                    opacity: [0, 1],
-                    '--float-scale': ['0.65', '1'],
-                    delay: animeApi.stagger(70),
-                    duration: 460,
-                },
-                '-=380',
-            );
+        // Dọn animation cũ trên DOM trước khi animate mới
+        remove(this._root.querySelectorAll('*'));
 
-        this._animations.push(intro);
+        this._started = true;
+        this._isExiting = false;
 
         if (tail) {
             this._animations.push(
-                animeApi({
-                    targets: tail,
+                animate(tail, {
                     rotate: [-8, 10],
                     duration: 1500,
                     delay: 600,
-                    easing: 'easeInOutSine',
-                    direction: 'alternate',
+                    ease: 'inOutSine',
+                    alternate: true,
                     loop: true,
                 }),
             );
         }
 
-        
-        if (cat_right) {
+        if (catRight) {
             this._animations.push(
-                animeApi({
-                    targets: cat_right,
+                animate(catRight, {
                     rotate: [0, -8, 0, 6, 0],
-                    translateY: [0, -6, 0],
+                    y: [0, -6, 0],
                     duration: 1600,
                     delay: 500,
-                    easing: 'easeInOutSine',
+                    ease: 'inOutSine',
                     loop: true,
                 }),
             );
@@ -94,13 +79,12 @@ export class StartScreenAnimator {
 
         if (guitar) {
             this._animations.push(
-                animeApi({
-                    targets: guitar,
+                animate(guitar, {
                     rotate: [0, -4, 0, 4, 0],
-                    translateY: [0, -6, 0],
+                    y: [0, -6, 0],
                     duration: 1600,
                     delay: 500,
-                    easing: 'easeInOutSine',
+                    ease: 'inOutSine',
                     loop: true,
                 }),
             );
@@ -108,11 +92,10 @@ export class StartScreenAnimator {
 
         if (setting) {
             this._animations.push(
-                animeApi({
-                    targets: setting,
+                animate(setting, {
                     rotate: ['0deg', '360deg'],
                     duration: 9000,
-                    easing: 'linear',
+                    ease: 'linear',
                     loop: true,
                 }),
             );
@@ -120,11 +103,10 @@ export class StartScreenAnimator {
 
         if (play) {
             this._animations.push(
-                animeApi({
-                    targets: play,
+                animate(play, {
                     scale: [1, 1.06, 1],
                     duration: 1600,
-                    easing: 'easeInOutSine',
+                    ease: 'inOutSine',
                     loop: true,
                 }),
             );
@@ -132,12 +114,11 @@ export class StartScreenAnimator {
 
         if (ring) {
             this._animations.push(
-                animeApi({
-                    targets: ring,
+                animate(ring, {
                     opacity: [0.85, 0],
                     scale: [0.76, 1.25],
                     duration: 1600,
-                    easing: 'easeOutQuad',
+                    ease: 'outQuad',
                     loop: true,
                 }),
             );
@@ -150,15 +131,14 @@ export class StartScreenAnimator {
             const motion = { y: 0, rot: 0 };
 
             this._animations.push(
-                animeApi({
-                    targets: motion,
+                animate(motion, {
                     y: [0, -12, 0],
                     rot: [0, swingAtPeak, 0],
                     duration: 1500 + index * 100,
                     delay: 350 + index * 80,
-                    easing: 'easeInOutSine',
+                    ease: 'inOutSine',
                     loop: true,
-                    update: () => {
+                    onUpdate: () => {
                         particle.style.setProperty('--float-y', `${motion.y}px`);
                         particle.style.setProperty('--float-rot', `${motion.rot}deg`);
                     },
@@ -171,10 +151,14 @@ export class StartScreenAnimator {
         if (this._isExiting) return;
         this._isExiting = true;
 
+        const animeApi = getAnimeApi();
         if (!animeApi || !this._root) {
+            this._started = false;
             onComplete?.();
             return;
         }
+
+        const { createTimeline } = animeApi;
 
         this._animations.forEach((anim) => {
             if (anim && typeof anim.pause === 'function') {
@@ -188,31 +172,34 @@ export class StartScreenAnimator {
         );
         const particleTargets = this._root.querySelectorAll('.start-particle');
 
-        const outro = animeApi.timeline({
-            duration: 320,
-            easing: 'easeInCubic',
-            complete: () => onComplete?.(),
-        });
-
-        outro.add({
-            targets: movingTargets,
-            opacity: [1, 0],
-            translateY: [0, 18],
-        });
-
-        outro.add(
-            {
-                targets: particleTargets,
-                opacity: [1, 0],
-                duration: 220,
-                easing: 'linear',
+        const outro = createTimeline({
+            duration: 440,
+            ease: 'inOutQuad',
+            onComplete: () => {
+                this._started = false;
+                this._isExiting = false;
+                onComplete?.();
             },
-            0,
-        );
+        });
+        
+        outro.add(movingTargets, {
+            opacity: [1, 0],
+            y: [0, 10],
+            scale: [1, 0.985],
+        });
+        
+        outro.add(particleTargets, {
+            opacity: [1, 0],
+            y: [0, 6],
+            scale: [1, 0.96],
+            duration: 300,
+            ease: 'outQuad',
+        }, 0);
     }
 
-    stop() {
+    stop(resetStarted = true) {
         if (!this._root) return;
+        const animeApi = getAnimeApi();
 
         this._animations.forEach((anim) => {
             if (anim && typeof anim.pause === 'function') {
@@ -223,6 +210,11 @@ export class StartScreenAnimator {
 
         if (animeApi) {
             animeApi.remove(this._root.querySelectorAll('*'));
+        }
+
+        this._isExiting = false;
+        if (resetStarted) {
+            this._started = false;
         }
     }
 }
