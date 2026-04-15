@@ -276,6 +276,34 @@ export class GameScreenView {
     }
 
     /**
+     * Resolve target x-offset for paws with optional viewport-width scaling.
+     * xOffsetPx in config is treated as value at referenceWidthPx.
+     */
+    _getResponsivePawOffsetPx(targetCfg) {
+        const baseOffset = Number(targetCfg?.xOffsetPx) || 0;
+        if (!baseOffset) return 0;
+
+        const responsiveCfg = CFG.paw.targetOffsetResponsive;
+        if (!responsiveCfg?.enabled) return baseOffset;
+
+        const viewportWidth = Number(window.innerWidth || document.documentElement?.clientWidth) || 0;
+        if (!viewportWidth) return baseOffset;
+
+        const referenceWidthPx = Math.max(1, Number(responsiveCfg.referenceWidthPx) || 1440);
+        const rawScale = viewportWidth / referenceWidthPx;
+
+        const minScaleCfg = Number(responsiveCfg.minScale);
+        const maxScaleCfg = Number(responsiveCfg.maxScale);
+        const minScale = Number.isFinite(minScaleCfg) ? minScaleCfg : 0.65;
+        const maxScale = Number.isFinite(maxScaleCfg) ? maxScaleCfg : 1.2;
+        const lower = Math.min(minScale, maxScale);
+        const upper = Math.max(minScale, maxScale);
+        const scale = Math.min(upper, Math.max(lower, rawScale));
+
+        return baseOffset * scale;
+    }
+
+    /**
      * Slide the correct paw from its current position to the target lane,
      * perform a slam hit, then return to home after a short idle.
      * Target position is read directly from the .lane DOM element.
@@ -314,7 +342,8 @@ export class GameScreenView {
         }
 
         const laneRect = laneEl.getBoundingClientRect();
-        const targetX = laneRect.left + laneRect.width / 2 + (laneTargetCfg?.xOffsetPx || 0);
+        const sideOffset = this._getResponsivePawOffsetPx(laneTargetCfg);
+        const targetX = laneRect.left + laneRect.width / 2 + sideOffset;
         const restX = this._getPawRestCenterX(paw);
         const dx = targetX - restX;
 
@@ -503,7 +532,7 @@ export class GameScreenView {
         const defaultSide = laneIndex < laneCount / 2 ? 'left' : 'right';
         const expectedSide = targetCfg?.side || defaultSide;
         const sideOffset = expectedSide === side
-            ? (targetCfg?.xOffsetPx || 0)
+            ? this._getResponsivePawOffsetPx(targetCfg)
             : 0;
 
         const laneRect = laneEl.getBoundingClientRect();
