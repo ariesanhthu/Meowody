@@ -632,37 +632,37 @@
 .gs-playfield .gs-perfect-rainbow,
 .gs-playfield .gs-perfect-rainbow-2 {
     position: absolute;
-    inset: -28%;
+    inset: -12%;
     opacity: 0;
-    filter: blur(26px) saturate(1.45);
-    transform: translate3d(0, 0, 0) scale(0.85);
+    filter: blur(12px) saturate(1.8) contrast(1.08);
+    transform: translate3d(0, 0, 0);
     will-change: transform, opacity;
 }
 
 .gs-playfield .gs-perfect-rainbow {
     background:
-        radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.34) 0%, transparent 18%),
-        radial-gradient(circle at 62% 42%, rgba(255, 127, 0, 0.28) 0%, transparent 20%),
-        radial-gradient(circle at 68% 58%, rgba(255, 255, 0, 0.22) 0%, transparent 20%),
-        radial-gradient(circle at 50% 68%, rgba(0, 255, 0, 0.22) 0%, transparent 22%),
-        radial-gradient(circle at 35% 62%, rgba(0, 180, 255, 0.22) 0%, transparent 22%),
-        radial-gradient(circle at 30% 40%, rgba(75, 0, 130, 0.24) 0%, transparent 20%),
-        radial-gradient(circle at 48% 28%, rgba(148, 0, 211, 0.26) 0%, transparent 18%);
+    radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.52) 0%, transparent 24%),
+    radial-gradient(circle at 62% 42%, rgba(255, 127, 0, 0.46) 0%, transparent 26%),
+    radial-gradient(circle at 68% 58%, rgba(255, 255, 0, 0.42) 0%, transparent 26%),
+    radial-gradient(circle at 50% 68%, rgba(0, 255, 0, 0.42) 0%, transparent 28%),
+    radial-gradient(circle at 35% 62%, rgba(0, 180, 255, 0.42) 0%, transparent 28%),
+    radial-gradient(circle at 30% 40%, rgba(75, 0, 130, 0.44) 0%, transparent 26%),
+    radial-gradient(circle at 48% 28%, rgba(148, 0, 211, 0.46) 0%, transparent 24%);
 }
 
 .gs-playfield .gs-perfect-rainbow-2 {
     background:
-        radial-gradient(circle at 45% 45%, rgba(255, 255, 255, 0.2) 0%, transparent 16%),
+        radial-gradient(circle at 45% 45%, rgba(255, 255, 255, 0.3) 0%, transparent 18%),
         conic-gradient(
             from 0deg,
-            rgba(255, 0, 0, 0.16),
-            rgba(255, 127, 0, 0.16),
-            rgba(255, 255, 0, 0.16),
-            rgba(0, 255, 0, 0.16),
-            rgba(0, 180, 255, 0.16),
-            rgba(75, 0, 130, 0.16),
-            rgba(148, 0, 211, 0.16),
-            rgba(255, 0, 0, 0.16)
+            rgba(255, 0, 0, 0.3),
+            rgba(255, 127, 0, 0.3),
+            rgba(255, 255, 0, 0.3),
+            rgba(0, 255, 0, 0.3),
+            rgba(0, 180, 255, 0.3),
+            rgba(75, 0, 130, 0.3),
+            rgba(148, 0, 211, 0.3),
+            rgba(255, 0, 0, 0.3)
         );
 }
 
@@ -670,17 +670,17 @@
     content: '';
     position: absolute;
     inset: -6%;
-    opacity: 0.52;
+    opacity: 0.64;
     background:
         linear-gradient(
             120deg,
-            rgba(255, 0, 0, 0.08) 0%,
-            rgba(255, 127, 0, 0.08) 14%,
-            rgba(255, 255, 0, 0.075) 28%,
-            rgba(0, 255, 0, 0.075) 42%,
-            rgba(0, 180, 255, 0.075) 57%,
-            rgba(75, 0, 130, 0.08) 75%,
-            rgba(148, 0, 211, 0.08) 100%
+            rgba(255, 0, 0, 0.14) 0%,
+            rgba(255, 127, 0, 0.14) 14%,
+            rgba(255, 255, 0, 0.13) 28%,
+            rgba(0, 255, 0, 0.13) 42%,
+            rgba(0, 180, 255, 0.13) 57%,
+            rgba(75, 0, 130, 0.14) 75%,
+            rgba(148, 0, 211, 0.14) 100%
         );
     will-change: opacity;
 }

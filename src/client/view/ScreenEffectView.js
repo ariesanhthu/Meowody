@@ -55,17 +55,14 @@ export class ScreenEffectView {
         if (!animeApi || !this._overlayEl || !this._rainbowEl || !this._rainbow2El || !this._pulseEl) return;
         const { createTimeline, remove } = animeApi;
         const now = performance.now();
-        if (now - this._lastPerfectAt < 90) return;
-        if (now - this._lastPerfectAt > 1100) this._perfectChain = 0;
+        if (now - this._lastPerfectAt < 120) return;
         this._lastPerfectAt = now;
-        this._perfectChain = Math.min(this._perfectChain + 1, 8);
 
-        const chainBoost = this._perfectChain / 8; // 0..1
-        const speedFactor = 1 - chainBoost * 0.34; // chain càng cao càng nhanh
-        const overlayPeak = 0.38 + chainBoost * 0.22; // base mờ hơn, tăng dần
-        const rainbowPeak = 0.45 + chainBoost * 0.30;
-        const rainbow2Peak = 0.30 + chainBoost * 0.22;
-        const pulsePeak = 0.42 + chainBoost * 0.30;
+        const fadeInMs = 90;
+        const fadeOutMs = 260;
+        const overlayPeak = 0.28;
+        const rainbowPeak = 0.52;
+        const rainbow2Peak = 0.36;
 
         if (this._timeline) this._timeline.pause();
 
@@ -75,42 +72,22 @@ export class ScreenEffectView {
         this._timeline = createTimeline({ ease: 'outCubic' })
             .add(this._overlayEl, {
                 opacity: [
-                    { to: overlayPeak, duration: 110 * speedFactor, ease: 'linear' },
-                    { to: overlayPeak * 0.92, duration: 330 * speedFactor, ease: 'linear' },
-                    { to: 0, duration: 320 * speedFactor, ease: 'inQuad' },
+                    { to: overlayPeak, duration: fadeInMs, ease: 'outQuad' },
+                    { to: 0, duration: fadeOutMs, ease: 'inQuad' },
                 ],
-            }, 0)
-            .add(this._pulseEl, {
-                opacity: [
-                    { to: pulsePeak, duration: 120 * speedFactor, ease: 'outQuad' },
-                    { to: 0, duration: 340 * speedFactor, ease: 'inQuad' },
-                ],
-                scale: [0.2, 5.1 + chainBoost * 1.2],
-                duration: 460 * speedFactor,
-                ease: 'outCubic',
             }, 0)
             .add(this._rainbowEl, {
                 opacity: [
-                    { to: rainbowPeak, duration: 130 * speedFactor, ease: 'outQuad' },
-                    { to: rainbowPeak * 0.58, duration: 260 * speedFactor, ease: 'linear' },
-                    { to: 0, duration: 340 * speedFactor, ease: 'inQuad' },
+                    { to: rainbowPeak, duration: fadeInMs, ease: 'outQuad' },
+                    { to: 0, duration: fadeOutMs, ease: 'inQuad' },
                 ],
-                scale: [
-                    { to: 1.01 + chainBoost * 0.12, duration: 300 * speedFactor, ease: 'outCubic' },
-                    { to: 1.09 + chainBoost * 0.13, duration: 430 * speedFactor, ease: 'outQuad' },
-                ],
-                duration: 730 * speedFactor,
             }, 0)
             .add(this._rainbow2El, {
                 opacity: [
-                    { to: rainbow2Peak, duration: 150 * speedFactor, ease: 'outQuad' },
-                    { to: rainbow2Peak * 0.52, duration: 220 * speedFactor, ease: 'linear' },
-                    { to: 0, duration: 320 * speedFactor, ease: 'inQuad' },
+                    { to: rainbow2Peak, duration: fadeInMs + 20, ease: 'outQuad' },
+                    { to: 0, duration: fadeOutMs, ease: 'inQuad' },
                 ],
-                scale: [0.9, 1.06 + chainBoost * 0.22],
-                rotate: [0, 8 + chainBoost * 14],
-                duration: 690 * speedFactor,
-            }, 30 * speedFactor);
+            }, 20);
     }
 
     /**
@@ -143,8 +120,8 @@ export class ScreenEffectView {
         this._rainbowEl.style.opacity = '0';
         this._rainbow2El.style.opacity = '0';
         this._pulseEl.style.opacity = '0';
-        this._rainbowEl.style.transform = 'translate3d(0,0,0) scale(0.82)';
-        this._rainbow2El.style.transform = 'translate3d(0,0,0) scale(0.88) rotate(0deg)';
-        this._pulseEl.style.transform = 'translateX(-50%) translate3d(0,0,0) scale(0.2)';
+        this._rainbowEl.style.transform = 'translate3d(0,0,0)';
+        this._rainbow2El.style.transform = 'translate3d(0,0,0)';
+        this._pulseEl.style.transform = 'translateX(-50%) translate3d(0,0,0)';
     }
 }
