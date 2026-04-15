@@ -89,9 +89,10 @@ const GameScreenConfig = {
         sideRightPct: 75,
         centerPct: 50,
         hiddenOffsetPx: 90,
-        xMoveDurationMs: 170,
-        riseDurationMs: 190,
-        hideDurationMs: 140,
+        xMoveDurationMs: 230,
+        riseDurationMs: 200,
+        hideDurationMs: 250,
+        holdBeforeHideMs: 100,
     },
 
     /* ── GUI overlay (fish score + pause icon) ── */

@@ -37,6 +37,7 @@ export class GameScreenView {
         };
         this._comboPoseActive = false;
         this._catHeadPose = 'hidden';
+        this._catHeadHideTimer = null;
     }
 
     /**
@@ -392,25 +393,50 @@ export class GameScreenView {
         }
 
         this._comboPoseActive = true;
-        this._movePawToLane('left', targets.leftLane, laneCount);
-        this._movePawToLane('right', targets.rightLane, laneCount);
+        if (targets.leftHome) this._returnPawHome('left');
+        else this._movePawToLane('left', targets.leftLane, laneCount);
+
+        if (targets.rightHome) this._returnPawHome('right');
+        else this._movePawToLane('right', targets.rightLane, laneCount);
     }
 
     _resolveComboPawTargets(valid, laneCount) {
         if (valid.length === laneCount) {
-            return { leftLane: 0, rightLane: laneCount - 1 };
+            return { leftLane: 0, rightLane: laneCount - 1, leftHome: false, rightHome: false };
         }
-
-        if (valid.length !== 3) return null;
 
         const split = laneCount / 2;
         const leftPressed = valid.filter((lane) => lane < split);
         const rightPressed = valid.filter((lane) => lane >= split);
 
+        if (valid.length === 2) {
+            if (leftPressed.length === 2) {
+                return {
+                    leftLane: 0,
+                    rightLane: null,
+                    leftHome: false,
+                    rightHome: true,
+                };
+            }
+            if (rightPressed.length === 2) {
+                return {
+                    leftLane: null,
+                    rightLane: laneCount - 1,
+                    leftHome: true,
+                    rightHome: false,
+                };
+            }
+            return null;
+        }
+
+        if (valid.length !== 3) return null;
+
         if (leftPressed.length === 2 && rightPressed.length === 1) {
             return {
                 leftLane: 0,
                 rightLane: rightPressed[0],
+                leftHome: false,
+                rightHome: false,
             };
         }
 
@@ -418,6 +444,8 @@ export class GameScreenView {
             return {
                 leftLane: leftPressed[0],
                 rightLane: laneCount - 1,
+                leftHome: false,
+                rightHome: false,
             };
         }
 
@@ -540,6 +568,11 @@ export class GameScreenView {
         if (!this._catHeadWrap) return;
         if (pose === this._catHeadPose) return;
 
+        if (this._catHeadHideTimer) {
+            clearTimeout(this._catHeadHideTimer);
+            this._catHeadHideTimer = null;
+        }
+
         const headCfg = CFG.catHead;
         const xMap = {
             left: headCfg.sideLeftPct,
@@ -548,7 +581,13 @@ export class GameScreenView {
         };
 
         if (pose === 'hidden') {
-            this._catHeadWrap.classList.remove('is-visible');
+            const holdMs = Math.max(0, headCfg.holdBeforeHideMs || 0);
+            this._catHeadHideTimer = setTimeout(() => {
+                if (this._catHeadWrap) {
+                    this._catHeadWrap.classList.remove('is-visible');
+                }
+                this._catHeadHideTimer = null;
+            }, holdMs);
             this._catHeadPose = pose;
             return;
         }
@@ -678,6 +717,10 @@ nearestToHit: ${nearestLabel}`;
         this._catHeadWrap = null;
         this._catHead = null;
         this._catHeadPose = 'hidden';
+        if (this._catHeadHideTimer) {
+            clearTimeout(this._catHeadHideTimer);
+            this._catHeadHideTimer = null;
+        }
         this._scoreEl = null;
         this._collisionDebugEl = null;
         this._wrap = null;

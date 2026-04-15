@@ -389,16 +389,14 @@
     height: auto;
     pointer-events: none;
     user-select: none;
-    opacity: 0;
-    transform: translateY(var(--gs-head-y-hidden, 90px));
-    transition:
-        transform var(--gs-head-rise-ms, 190ms) cubic-bezier(0.16, 1, 0.3, 1),
-        opacity var(--gs-head-hide-ms, 140ms) ease-out;
+    transform: translateY(calc(100% + var(--gs-head-y-hidden, 90px)));
+    transition: transform var(--gs-head-hide-ms, 260ms) cubic-bezier(0.4, 0, 1, 1);
 }
 
 .gs-cat-head-wrap.is-visible .gs-cat-head {
-    opacity: 1;
     transform: translateY(0);
+    transition-duration: var(--gs-head-rise-ms, 190ms);
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ─── Cat paws — anchored at virtual slots 0 / 5 inside the lane grid ─── */
@@ -492,7 +490,7 @@
 .gs-pause-actions {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 23px;
 }
 
 .gs-pause-actions .btn {
