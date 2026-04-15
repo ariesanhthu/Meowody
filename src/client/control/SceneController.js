@@ -159,6 +159,14 @@ export class SceneController {
             if (this._gameScreenView) this._gameScreenView.animatePaw(data.laneIndex, 4, data.key);
         });
 
+        this._bus.on('input:lanes-state', (data) => {
+            if (this._gameScreenView) {
+                const pressed = data?.pressedLanes || [];
+                this._gameScreenView.updateCatHeadPose(pressed, 4);
+                this._gameScreenView.updatePawPose(pressed, 4);
+            }
+        });
+
         this._bus.on('lane:good', (data) => {
             if (this._laneView) this._laneView.playJudgementEffect(data.laneIndex, data.judgement);
         });

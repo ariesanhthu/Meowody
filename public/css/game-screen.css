@@ -371,6 +371,36 @@
     background: var(--gs-lane-3);
 }
 
+/* ─── Cat head (combo poses) ─── */
+.gs-cat-head-wrap {
+    position: absolute;
+    left: 50%;
+    bottom: var(--gs-head-bottom, -1%);
+    width: clamp(var(--gs-head-min, 320px), var(--gs-head-vw, 26vw), var(--gs-head-max, 460px));
+    transform: translateX(-50%);
+    z-index: 7;
+    pointer-events: none;
+    transition: left var(--gs-head-x-ms, 170ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gs-cat-head {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0;
+    transform: translateY(var(--gs-head-y-hidden, 90px));
+    transition:
+        transform var(--gs-head-rise-ms, 190ms) cubic-bezier(0.16, 1, 0.3, 1),
+        opacity var(--gs-head-hide-ms, 140ms) ease-out;
+}
+
+.gs-cat-head-wrap.is-visible .gs-cat-head {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* ─── Cat paws — anchored at virtual slots 0 / 5 inside the lane grid ─── */
 .gs-paw-home {
     position: absolute;

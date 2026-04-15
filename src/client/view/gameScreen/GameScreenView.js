@@ -3,6 +3,7 @@ import CFG from './GameScreenConfig.js';
 const ASSET = {
     pawLeft: 'assets/game_screen/paw-left.png',
     pawRight: 'assets/game_screen/paw-right.png',
+    catHead: 'assets/game_screen/cat_head.png',
     note: 'assets/game_screen/note.png',
     scoreBoard: 'assets/game_screen/score-board.png',
     pauseBtn: 'assets/ui/pause.png',
@@ -24,12 +25,18 @@ export class GameScreenView {
         this._pawLeft = null;
         /** @type {HTMLImageElement|null} */
         this._pawRight = null;
+        /** @type {HTMLElement|null} */
+        this._catHeadWrap = null;
+        /** @type {HTMLImageElement|null} */
+        this._catHead = null;
         /** @type {number} */
         this._laneCount = 4;
         this._pawState = {
-            left: { homeX: null, returnTimer: null },
-            right: { homeX: null, returnTimer: null },
+            left: { homeX: null, returnTimer: null, currentDx: 0, targetDx: 0 },
+            right: { homeX: null, returnTimer: null, currentDx: 0, targetDx: 0 },
         };
+        this._comboPoseActive = false;
+        this._catHeadPose = 'hidden';
     }
 
     /**
@@ -73,6 +80,9 @@ export class GameScreenView {
                     <div class="notes-layer"></div>
                 </div>
                 ${sketchSVG}
+                <div class="gs-cat-head-wrap" aria-hidden="true">
+                    <img class="gs-cat-head" src="${ASSET.catHead}" alt="" draggable="false">
+                </div>
                 <div class="gs-paw-home gs-paw-home-left">
                     <img class="gs-paw gs-paw-left" src="${ASSET.pawLeft}" alt="" draggable="false">
                 </div>
@@ -88,9 +98,12 @@ export class GameScreenView {
         this._wrap = wrap;
         this._pawLeft = wrap.querySelector('.gs-paw-left');
         this._pawRight = wrap.querySelector('.gs-paw-right');
+        this._catHeadWrap = wrap.querySelector('.gs-cat-head-wrap');
+        this._catHead = wrap.querySelector('.gs-cat-head');
         this._collisionDebugEl = wrap.querySelector('#gs-collision-debug');
 
         this._applyConfig();
+        this._applyCatHeadPose('hidden');
     }
 
     /**
@@ -150,7 +163,7 @@ export class GameScreenView {
     /** @private — Inject all config values as CSS custom properties on the root. */
     _applyConfig() {
         const s = this._wrap.style;
-        const { lane, hitLine, receptorZone, note, paw, gui, background } = CFG;
+        const { lane, hitLine, receptorZone, note, paw, catHead, gui, background } = CFG;
 
         s.setProperty('--gs-bg', background.color);
 
@@ -178,6 +191,15 @@ export class GameScreenView {
         s.setProperty('--gs-paw-min', `${paw.minWidthPx}px`);
         s.setProperty('--gs-paw-vw', `${paw.preferredVw}vw`);
         s.setProperty('--gs-paw-max', `${paw.maxWidthPx}px`);
+
+        s.setProperty('--gs-head-bottom', `${catHead.bottomPct}%`);
+        s.setProperty('--gs-head-min', `${catHead.minWidthPx}px`);
+        s.setProperty('--gs-head-vw', `${catHead.preferredVw}vw`);
+        s.setProperty('--gs-head-max', `${catHead.maxWidthPx}px`);
+        s.setProperty('--gs-head-y-hidden', `${catHead.hiddenOffsetPx}px`);
+        s.setProperty('--gs-head-x-ms', `${catHead.xMoveDurationMs}ms`);
+        s.setProperty('--gs-head-rise-ms', `${catHead.riseDurationMs}ms`);
+        s.setProperty('--gs-head-hide-ms', `${catHead.hideDurationMs}ms`);
 
         const [minR, vw, maxR] = gui.scoreFontSizeClamp;
         s.setProperty('--gs-score-top', `${gui.scoreTopPct}%`);
@@ -268,6 +290,7 @@ export class GameScreenView {
     animatePaw(laneIndex, laneCount, keyPressed) {
         const animeApi = window.anime;
         if (!animeApi || !this._wrap) return;
+        if (this._comboPoseActive) return;
 
         const keyTargetCfg = (keyPressed && CFG.paw.keyTargets)
             ? CFG.paw.keyTargets[String(keyPressed)]
@@ -319,6 +342,8 @@ export class GameScreenView {
             });
 
         const totalSlamMs = moveDurationMs + 55 + 70;
+        state.targetDx = dx;
+        state.currentDx = dx;
         state.returnTimer = setTimeout(() => {
             animeApi.remove(paw);
             animeApi({
@@ -329,8 +354,209 @@ export class GameScreenView {
                 rotate: 0,
                 duration: returnDurationMs,
                 easing: 'easeInOutQuad',
+                complete: () => {
+                    state.currentDx = 0;
+                },
             });
+            state.targetDx = 0;
         }, totalSlamMs + idleBeforeReturnMs);
+    }
+
+    /**
+     * Sync paw pose from currently held lanes.
+     * Rules:
+     *   - 4 lanes: both paws stay on outer lanes.
+     *   - 3 lanes: side with 2 held lanes uses the outermost lane on that side.
+     *   - Leaving combo state: both paws return home immediately.
+     *
+     * Args:
+     *   pressedLanes (number[]): Active lane indices currently held down.
+     *   laneCount (number): Total lane count.
+     */
+    updatePawPose(pressedLanes, laneCount = this._laneCount) {
+        if (!this._wrap || !this._pawLeft || !this._pawRight) return;
+
+        const unique = [...new Set((pressedLanes || []).filter((lane) => Number.isInteger(lane)))];
+        const valid = unique
+            .filter((lane) => lane >= 0 && lane < laneCount)
+            .sort((a, b) => a - b);
+        const targets = this._resolveComboPawTargets(valid, laneCount);
+
+        if (!targets) {
+            if (this._comboPoseActive) {
+                this._comboPoseActive = false;
+                this._returnPawHome('left');
+                this._returnPawHome('right');
+            }
+            return;
+        }
+
+        this._comboPoseActive = true;
+        this._movePawToLane('left', targets.leftLane, laneCount);
+        this._movePawToLane('right', targets.rightLane, laneCount);
+    }
+
+    _resolveComboPawTargets(valid, laneCount) {
+        if (valid.length === laneCount) {
+            return { leftLane: 0, rightLane: laneCount - 1 };
+        }
+
+        if (valid.length !== 3) return null;
+
+        const split = laneCount / 2;
+        const leftPressed = valid.filter((lane) => lane < split);
+        const rightPressed = valid.filter((lane) => lane >= split);
+
+        if (leftPressed.length === 2 && rightPressed.length === 1) {
+            return {
+                leftLane: 0,
+                rightLane: rightPressed[0],
+            };
+        }
+
+        if (rightPressed.length === 2 && leftPressed.length === 1) {
+            return {
+                leftLane: leftPressed[0],
+                rightLane: laneCount - 1,
+            };
+        }
+
+        return null;
+    }
+
+    _returnPawHome(side) {
+        const animeApi = window.anime;
+        if (!animeApi || !this._wrap) return;
+
+        const paw = side === 'left' ? this._pawLeft : this._pawRight;
+        const state = side === 'left' ? this._pawState.left : this._pawState.right;
+        if (!paw) return;
+
+        if (state.returnTimer) {
+            clearTimeout(state.returnTimer);
+            state.returnTimer = null;
+        }
+
+        animeApi.remove(paw);
+        animeApi({
+            targets: paw,
+            translateX: 0,
+            translateY: 0,
+            scale: 1,
+            rotate: 0,
+            duration: CFG.paw.returnDurationMs,
+            easing: 'easeInOutQuad',
+            complete: () => {
+                state.currentDx = 0;
+            },
+        });
+        state.targetDx = 0;
+    }
+
+    _movePawToLane(side, laneIndex, laneCount) {
+        const animeApi = window.anime;
+        if (!animeApi || !this._wrap) return;
+
+        const paw = side === 'left' ? this._pawLeft : this._pawRight;
+        const state = side === 'left' ? this._pawState.left : this._pawState.right;
+        if (!paw) return;
+
+        const laneEl = this._wrap.querySelector(`.lane[data-lane="${laneIndex}"]`);
+        if (!laneEl) return;
+
+        if (state.returnTimer) {
+            clearTimeout(state.returnTimer);
+            state.returnTimer = null;
+        }
+
+        animeApi.remove(paw);
+
+        const targetCfg = CFG.paw.laneTargets?.[laneIndex] || null;
+        const defaultSide = laneIndex < laneCount / 2 ? 'left' : 'right';
+        const expectedSide = targetCfg?.side || defaultSide;
+        const sideOffset = expectedSide === side
+            ? (targetCfg?.xOffsetPx || 0)
+            : 0;
+
+        const laneRect = laneEl.getBoundingClientRect();
+        const targetX = laneRect.left + laneRect.width / 2 + sideOffset;
+        const restX = this._getPawRestCenterX(paw);
+        const dx = targetX - restX;
+
+        state.targetDx = dx;
+
+        animeApi({
+            targets: paw,
+            translateX: dx,
+            translateY: 0,
+            scale: 1,
+            rotate: 0,
+            duration: CFG.paw.moveDurationMs,
+            easing: 'easeOutQuad',
+            complete: () => {
+                state.currentDx = dx;
+            },
+        });
+    }
+
+    /**
+     * Update cat-head pose from active lane presses.
+     *
+     * Args:
+     *   pressedLanes (number[]): Active lane indices currently held down.
+     *   laneCount (number): Total lane count.
+     */
+    updateCatHeadPose(pressedLanes, laneCount = this._laneCount) {
+        if (!this._catHeadWrap) return;
+        const pose = this._resolveCatHeadPose(pressedLanes, laneCount);
+        this._applyCatHeadPose(pose);
+    }
+
+    _resolveCatHeadPose(pressedLanes, laneCount) {
+        const unique = [...new Set((pressedLanes || []).filter((lane) => Number.isInteger(lane)))];
+        const valid = unique.filter((lane) => lane >= 0 && lane < laneCount);
+        const total = valid.length;
+        if (total < 2) return 'hidden';
+
+        const half = laneCount / 2;
+        const leftCount = valid.filter((lane) => lane < half).length;
+        const rightCount = total - leftCount;
+
+        if (total === laneCount) return 'center';
+        if (total === 3) {
+            if (leftCount === 2) return 'left';
+            if (rightCount === 2) return 'right';
+            return 'center';
+        }
+        if (total === 2) {
+            if (leftCount === 2) return 'left';
+            if (rightCount === 2) return 'right';
+        }
+
+        return 'hidden';
+    }
+
+    _applyCatHeadPose(pose) {
+        if (!this._catHeadWrap) return;
+        if (pose === this._catHeadPose) return;
+
+        const headCfg = CFG.catHead;
+        const xMap = {
+            left: headCfg.sideLeftPct,
+            center: headCfg.centerPct,
+            right: headCfg.sideRightPct,
+        };
+
+        if (pose === 'hidden') {
+            this._catHeadWrap.classList.remove('is-visible');
+            this._catHeadPose = pose;
+            return;
+        }
+
+        const x = xMap[pose] ?? headCfg.centerPct;
+        this._catHeadWrap.style.left = `${x}%`;
+        this._catHeadWrap.classList.add('is-visible');
+        this._catHeadPose = pose;
     }
 
     /**
@@ -448,6 +674,10 @@ nearestToHit: ${nearestLabel}`;
         }
         this._pawLeft = null;
         this._pawRight = null;
+        this._comboPoseActive = false;
+        this._catHeadWrap = null;
+        this._catHead = null;
+        this._catHeadPose = 'hidden';
         this._scoreEl = null;
         this._collisionDebugEl = null;
         this._wrap = null;
