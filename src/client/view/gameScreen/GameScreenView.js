@@ -7,7 +7,7 @@ const ASSET = {
     note: 'assets/game_screen/note.png',
     scoreBoard: 'assets/game_screen/score-board.png',
     pauseBtn: 'assets/ui/pause.png',
-    startBtn: 'assets/ui/start.png',
+    startBtn: 'assets/ui/pause.png',
     backBtn: 'assets/ui/back.png',
 };
 

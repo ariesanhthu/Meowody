@@ -4,7 +4,7 @@
     import { SceneController } from './control/SceneController.js';
 
     const INTRO_SEEN_KEY = 'mewody_intro_seen_v1';
-    const INTRO_FADE_MS = 320;
+    const INTRO_FADE_MS = 420;
 
     const root = document.getElementById('game-container');
     const introScreen = document.getElementById('intro-screen');
@@ -107,7 +107,6 @@
         function completeIntro(force) {
             if (finalized) return;
             finalized = true;
-            document.body.classList.remove('show-intro');
             if (!force && appReady) {
                 writeIntroSeenFlag();
             }
@@ -115,10 +114,12 @@
             if (!force) {
                 introScreen.classList.add('is-hidden');
                 window.setTimeout(() => {
+                    document.body.classList.remove('show-intro');
                     introScreen.remove();
                 }, INTRO_FADE_MS);
                 return;
             }
+            document.body.classList.remove('show-intro');
             introScreen.remove();
         }
     }
