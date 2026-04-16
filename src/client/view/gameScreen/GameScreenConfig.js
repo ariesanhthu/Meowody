@@ -4,6 +4,24 @@
  */
 const GameScreenConfig = {
 
+    /* ── Engine Parameters ── */
+    engine: {
+        // Tốc độ rơi của nốt (pixel mỗi millisecond). Số càng lớn rơi càng nhanh.
+        pxPerMs: 0.35,
+
+        // Bán kính vùng bắt nhịp của receptor (px). Dùng làm cơ sở tính toán khoảng cách va chạm.
+        receptorRadiusPx: 50,
+
+        // Bán kính của nốt rơi (px). Khi mép nốt (ball) chạm mép receptor sẽ được tính là Hit.
+        ballRadiusPx: 50,
+
+        // Thời gian hiển thị nốt trước khi chạm hit-line (ms)
+        lookaheadMs: 2800,
+
+        // Thời gian giữ nốt trên màn hình sau khi qua hit-line (ms) trước khi biến mất
+        pastHideMs: 400,
+    },
+
     /* ── Lane grid ── */
     lane: {
         widthPct: 60,
@@ -145,7 +163,7 @@ const GameScreenConfig = {
 
     /* ── Debug overlay ── */
     debug: {
-        showCollisionJudgement: false,
+        showCollisionJudgement: true,
         panelTopPx: 12,
         panelRightPx: 12,
     },

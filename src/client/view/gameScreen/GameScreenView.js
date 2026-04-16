@@ -214,6 +214,7 @@ export class GameScreenView {
         const debugCfg = CFG.debug || {};
         s.setProperty('--gs-debug-top', `${debugCfg.panelTopPx ?? 12}px`);
         s.setProperty('--gs-debug-right', `${debugCfg.panelRightPx ?? 12}px`);
+        
         if (this._collisionDebugEl) {
             this._collisionDebugEl.style.display = debugCfg.showCollisionJudgement ? 'block' : 'none';
             this._collisionDebugEl.style.position = 'absolute';
@@ -232,6 +233,39 @@ export class GameScreenView {
             this._collisionDebugEl.style.borderRadius = '8px';
             this._collisionDebugEl.style.pointerEvents = 'none';
             this._collisionDebugEl.style.whiteSpace = 'pre';
+        }
+
+        if (debugCfg.showCollisionJudgement) {
+            s.setProperty('--gs-hit-color', 'red');
+            s.setProperty('--gs-hit-h', '2px');
+
+            const hitLineEl = this._wrap.querySelector('.hit-line');
+            if (hitLineEl) {
+                hitLineEl.style.background = 'red';
+                hitLineEl.style.opacity = '1';
+                hitLineEl.style.zIndex = '999';
+
+                let debugBox = hitLineEl.querySelector('.gs-debug-hit-box');
+                if (!debugBox) {
+                    debugBox = document.createElement('div');
+                    debugBox.className = 'gs-debug-hit-box';
+                    debugBox.style.position = 'absolute';
+                    
+                    // The hitline center is aligned with the element's actual position.
+                    // The collision box total tolerance extends UP and DOWN from the hitline.
+                    const totalHitTol = CFG.engine.receptorRadiusPx + CFG.engine.ballRadiusPx;
+                    
+                    debugBox.style.bottom = `-${totalHitTol}px`;
+                    debugBox.style.width = '100%';
+                    debugBox.style.height = `${totalHitTol * 2}px`;
+                    debugBox.style.borderTop = '2px dashed rgba(255, 0, 0, 0.7)';
+                    debugBox.style.borderBottom = '2px dashed rgba(255, 0, 0, 0.7)';
+                    debugBox.style.background = 'rgba(255, 0, 0, 0.1)';
+                    debugBox.style.pointerEvents = 'none';
+                    debugBox.style.zIndex = '999';
+                    hitLineEl.appendChild(debugBox);
+                }
+            }
         }
     }
 
