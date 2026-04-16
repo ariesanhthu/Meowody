@@ -6,8 +6,8 @@ import { ScoreSystem } from './ScoreSystem.js';
 /** @typedef {import('./DataModels.js').JudgementResult} JudgementResult */
 
 const PX_PER_MS = 0.35;
-const RECEPTOR_RADIUS_PX = 40;
-const BALL_RADIUS_PX = 24;
+const RECEPTOR_RADIUS_PX = 100;
+const BALL_RADIUS_PX = 50;
 const HIT_WINDOW_MS = Math.ceil((RECEPTOR_RADIUS_PX + BALL_RADIUS_PX) / PX_PER_MS);
 const MISS_WINDOW_MS = HIT_WINDOW_MS;
 const LOOKAHEAD_MS = 2800;
