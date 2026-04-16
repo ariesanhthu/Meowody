@@ -6,13 +6,14 @@ import { ScoreSystem } from './ScoreSystem.js';
 /** @typedef {import('./DataModels.js').JudgementResult} JudgementResult */
 
 const PX_PER_MS = 0.35;
-const RECEPTOR_RADIUS_PX = 40;
-const BALL_RADIUS_PX = 24;
+const RECEPTOR_RADIUS_PX = 50;
+const BALL_RADIUS_PX = 40;
 const HIT_WINDOW_MS = Math.ceil((RECEPTOR_RADIUS_PX + BALL_RADIUS_PX) / PX_PER_MS);
 const MISS_WINDOW_MS = HIT_WINDOW_MS;
 const LOOKAHEAD_MS = 2800;
 const PAST_HIDE_MS = 400;
-const HIT_LINE_BOTTOM_OFFSET = 60;
+const RECEPTOR_BOTTOM_OFFSET_PX = 20;
+const HIT_LINE_BOTTOM_OFFSET_PX = RECEPTOR_BOTTOM_OFFSET_PX + RECEPTOR_RADIUS_PX;
 
 /**
  * Core gameplay state machine: time from GameClock, notes from Chart.
@@ -163,7 +164,7 @@ export class GameEngine {
      *   None
      */
     getRenderSnapshot(currentTimeMs, playfieldHeight = 600) {
-        const hitLineY = playfieldHeight - HIT_LINE_BOTTOM_OFFSET;
+        const hitLineY = playfieldHeight - HIT_LINE_BOTTOM_OFFSET_PX;
         /** @type {RenderNote[]} */
         const visibleNotes = [];
 
