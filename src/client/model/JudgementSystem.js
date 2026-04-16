@@ -2,7 +2,7 @@
  * Maps timing delta to a judgement label. Pure / near-pure function — no DOM, no score mutation.
  *
  * Windows are calibrated so pixel distance between ball center and receptor center
- * determines the judgement. With PX_PER_MS = 0.35 and receptor radius = 40px:
+ * determines the judgement. With PX_PER_MS = 0.35 and receptor radius = 50px:
  *   perfect: distance < 14px  →  40ms
  *   great:   distance < 28px  →  80ms
  *   good:    distance < 42px  → 120ms
