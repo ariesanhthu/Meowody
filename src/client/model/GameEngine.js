@@ -13,7 +13,7 @@ const MISS_WINDOW_MS = HIT_WINDOW_MS;
 const LOOKAHEAD_MS = 2800;
 const PAST_HIDE_MS = 400;
 const RECEPTOR_BOTTOM_OFFSET_PX = 20;
-const HIT_LINE_BOTTOM_OFFSET = RECEPTOR_BOTTOM_OFFSET_PX + RECEPTOR_RADIUS_PX;
+const HIT_LINE_BOTTOM_OFFSET_PX = RECEPTOR_BOTTOM_OFFSET_PX + RECEPTOR_RADIUS_PX;
 
 /**
  * Core gameplay state machine: time from GameClock, notes from Chart.
@@ -164,7 +164,7 @@ export class GameEngine {
      *   None
      */
     getRenderSnapshot(currentTimeMs, playfieldHeight = 600) {
-        const hitLineY = playfieldHeight - HIT_LINE_BOTTOM_OFFSET;
+        const hitLineY = playfieldHeight - HIT_LINE_BOTTOM_OFFSET_PX;
         /** @type {RenderNote[]} */
         const visibleNotes = [];
 
